@@ -1,0 +1,2552 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIxMjYyNTg1MzEyNjg4MDMwNjk5MCIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzZhZWNhMDQ1YmU5ZDA5ZjJfaW5kZXguaHRtbC01NjAifSwiZXhwIjoxNzkyMTMwMDQwLCJpYXQiOjE3OTIxMjY0NDAsImFsZyI6IlJTMjU2In0.bVX4gDhExrTNSZE8CUUgxiOt7B3iEImu1Sgj-iCzdf8eboLM7iCBCvYBwcYEECCYbHv7exOx7w9k3rXmP7D-YqekrkYufgKdr4id1jqmp5_fsvVhgscI0_vIPXHRlLP7aLaAVMw-VRk-XzsZ-fVU7Ir-lHqA94etE_92qoJhFHEtC7xP6_2Ehrc6gOXeIiHTiQyTtrO7PjedXpN2HCKnKfefYPrEdoKgU73Zi62uoW6fgjhVyABWSVnQrmiTLE3pE6pivy4x9fwvy5oGpq9z9zOEiS-mBhdvYi5VuH4pTzaLWlzKwJ7zVT3tsYFAeYP4KNr9KuUk7-OX4x3Vo2-SfA","c_6aeca045be9d09f2_index.html-560")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.j=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.i="";var l=0,t=null,r=null,q=[],F=new TextEncoder,G=new TextDecoder;
+c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*16|0;return(f===
+"x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;(g=t)==null||g.postMessage(a)}};
+Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>눈으로 보는 소리 실험실 &amp; 5-Band 그래픽 이퀄라이저</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Pretendard Font -->
+    <link rel="stylesheet" as="style" crossorigin="" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* 가로형 슬라이더 스타일 */
+        input[type="range"].horiz-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+            width: 100%;
+        }
+        input[type="range"].horiz-slider::-webkit-slider-runnable-track {
+            background: #1e293b;
+            height: 8px;
+            border-radius: 999px;
+            border: 1px solid #334155;
+        }
+        input[type="range"].horiz-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            margin-top: -5px;
+            background: #22d3ee;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.9);
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+        input[type="range"].horiz-slider:hover::-webkit-slider-thumb {
+            transform: scale(1.2);
+            background: #34d399;
+        }
+
+        .eq-vert-wrapper {
+            position: relative;
+            height: 115px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            touch-action: none;
+            cursor: ns-resize;
+        }
+        .eq-vert-track {
+            position: relative;
+            width: 8px;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(71, 85, 105, 0.9);
+            border-radius: 999px;
+            pointer-events: none;
+        }
+        .eq-vert-fill {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            border-radius: 999px;
+            background: linear-gradient(to top, #22d3ee, #34d399, #a78bfa);
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.45);
+        }
+        .eq-vert-thumb {
+            position: absolute;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #0f172a;
+            border: 3px solid #22d3ee;
+            box-shadow: 0 0 14px rgba(34, 211, 238, 0.95);
+            pointer-events: none;
+            transition: transform 0.1s ease, border-color 0.15s ease;
+        }
+        .eq-vert-wrapper:hover .eq-vert-thumb,
+        .eq-vert-wrapper.dragging .eq-vert-thumb {
+            transform: translate(-50%, -50%) scale(1.22);
+            border-color: #c084fc;
+            box-shadow: 0 0 18px rgba(192, 132, 252, 1);
+        }
+
+        /* 피아노 건반 스타일 */
+        .piano-key {
+            transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        .piano-key:active, .piano-key.active-key {
+            transform: translateY(2px);
+            background: linear-gradient(180deg, #22d3ee 0%, #0284c7 100%) !important;
+            color: #020617 !important;
+            border-color: #67e8f9 !important;
+            box-shadow: 0 0 16px rgba(34, 211, 238, 0.75);
+        }
+
+        button {
+            cursor: pointer;
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0px}.inset-x-3{left:0.75rem;right:0.75rem}.right-1\.5{right:0.375rem}.top-1\.5{top:0.375rem}.top-1\/2{top:50%}.z-30{z-index:30}.z-0{z-index:0}.z-10{z-index:10}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:0.25rem}.mb-1\.5{margin-bottom:0.375rem}.-mt-3\.5{margin-top:-0.875rem}.mb-2{margin-bottom:0.5rem}.mr-1{margin-right:0.25rem}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.block{display:block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-32{height:8rem}.h-8{height:2rem}.h-full{height:100%}.h-2\.5{height:0.625rem}.h-3{height:0.75rem}.min-h-0{min-height:0px}.min-h-\[145px\]{min-height:145px}.min-h-\[165px\]{min-height:165px}.min-h-\[170px\]{min-height:170px}.min-h-\[195px\]{min-height:195px}.min-h-\[225px\]{min-height:225px}.w-10{width:2.5rem}.w-8{width:2rem}.w-full{width:100%}.w-2\.5{width:0.625rem}.w-3\/4{width:75%}.w-9{width:2.25rem}.min-w-0{min-width:0px}.min-w-\[280px\]{min-width:280px}.max-w-\[1920px\]{max-width:1920px}.flex-1{flex:1 1 0%}.flex-\[1\.25\]{flex:1.25}.shrink-0{flex-shrink:0}.-translate-y-1\/2{--tw-translate-y:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite}.cursor-crosshair{cursor:crosshair}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;user-select:none}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.grid-cols-5{grid-template-columns:repeat(5, minmax(0, 1fr))}.grid-cols-8{grid-template-columns:repeat(8, minmax(0, 1fr))}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.items-baseline{align-items:baseline}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.overflow-hidden{overflow:hidden}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.rounded-md{border-radius:0.375rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-dashed{border-style:dashed}.border-amber-500\/40{border-color:rgb(245 158 11 / 0.4)}.border-cyan-400{--tw-border-opacity:1;border-color:rgb(34 211 238 / var(--tw-border-opacity, 1))}.border-cyan-500\/30{border-color:rgb(6 182 212 / 0.3)}.border-cyan-500\/40{border-color:rgb(6 182 212 / 0.4)}.border-rose-500\/40{border-color:rgb(244 63 94 / 0.4)}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.border-slate-800\/80{border-color:rgb(30 41 59 / 0.8)}.border-violet-500\/30{border-color:rgb(139 92 246 / 0.3)}.border-violet-500\/40{border-color:rgb(139 92 246 / 0.4)}.border-slate-700\/70{border-color:rgb(51 65 85 / 0.7)}.border-slate-800\/90{border-color:rgb(30 41 59 / 0.9)}.border-violet-400{--tw-border-opacity:1;border-color:rgb(167 139 250 / var(--tw-border-opacity, 1))}.bg-amber-400{--tw-bg-opacity:1;background-color:rgb(251 191 36 / var(--tw-bg-opacity, 1))}.bg-amber-500\/15{background-color:rgb(245 158 11 / 0.15)}.bg-amber-500\/20{background-color:rgb(245 158 11 / 0.2)}.bg-black{--tw-bg-opacity:1;background-color:rgb(0 0 0 / var(--tw-bg-opacity, 1))}.bg-cyan-500{--tw-bg-opacity:1;background-color:rgb(6 182 212 / var(--tw-bg-opacity, 1))}.bg-cyan-500\/15{background-color:rgb(6 182 212 / 0.15)}.bg-cyan-500\/20{background-color:rgb(6 182 212 / 0.2)}.bg-emerald-500{--tw-bg-opacity:1;background-color:rgb(16 185 129 / var(--tw-bg-opacity, 1))}.bg-rose-500{--tw-bg-opacity:1;background-color:rgb(244 63 94 / var(--tw-bg-opacity, 1))}.bg-rose-500\/20{background-color:rgb(244 63 94 / 0.2)}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-800\/80{background-color:rgb(30 41 59 / 0.8)}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-slate-900\/90{background-color:rgb(15 23 42 / 0.9)}.bg-slate-900\/95{background-color:rgb(15 23 42 / 0.95)}.bg-slate-950{--tw-bg-opacity:1;background-color:rgb(2 6 23 / var(--tw-bg-opacity, 1))}.bg-slate-950\/80{background-color:rgb(2 6 23 / 0.8)}.bg-slate-950\/90{background-color:rgb(2 6 23 / 0.9)}.bg-violet-500\/20{background-color:rgb(139 92 246 / 0.2)}.bg-cyan-400{--tw-bg-opacity:1;background-color:rgb(34 211 238 / var(--tw-bg-opacity, 1))}.bg-rose-600\/90{background-color:rgb(225 29 72 / 0.9)}.bg-slate-800\/90{background-color:rgb(30 41 59 / 0.9)}.bg-slate-950\/85{background-color:rgb(2 6 23 / 0.85)}.bg-violet-400{--tw-bg-opacity:1;background-color:rgb(167 139 250 / var(--tw-bg-opacity, 1))}.bg-violet-500\/25{background-color:rgb(139 92 246 / 0.25)}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-cyan-400{--tw-gradient-from:#22d3ee var(--tw-gradient-from-position);--tw-gradient-to:rgb(34 211 238 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-rose-950\/45{--tw-gradient-from:rgb(76 5 25 / 0.45) var(--tw-gradient-from-position);--tw-gradient-to:rgb(76 5 25 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-emerald-400{--tw-gradient-from:#34d399 var(--tw-gradient-from-position);--tw-gradient-to:rgb(52 211 153 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.via-emerald-400{--tw-gradient-to:rgb(52 211 153 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #34d399 var(--tw-gradient-via-position), var(--tw-gradient-to)}.via-slate-950{--tw-gradient-to:rgb(2 6 23 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #020617 var(--tw-gradient-via-position), var(--tw-gradient-to)}.via-cyan-400{--tw-gradient-to:rgb(34 211 238 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #22d3ee var(--tw-gradient-via-position), var(--tw-gradient-to)}.to-slate-950{--tw-gradient-to:#020617 var(--tw-gradient-to-position)}.to-violet-500{--tw-gradient-to:#8b5cf6 var(--tw-gradient-to-position)}.to-rose-500{--tw-gradient-to:#f43f5e var(--tw-gradient-to-position)}.p-1{padding:0.25rem}.p-2{padding:0.5rem}.p-2\.5{padding:0.625rem}.p-3{padding:0.75rem}.p-3\.5{padding:0.875rem}.px-1\.5{padding-left:0.375rem;padding-right:0.375rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.pr-0\.5{padding-right:0.125rem}.pr-1{padding-right:0.25rem}.text-center{text-align:center}.text-right{text-align:right}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xs{font-size:0.75rem;line-height:1rem}.text-\[9px\]{font-size:9px}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-medium{font-weight:500}.font-normal{font-weight:400}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.tracking-wider{letter-spacing:0.05em}.text-amber-200{--tw-text-opacity:1;color:rgb(253 230 138 / var(--tw-text-opacity, 1))}.text-amber-300{--tw-text-opacity:1;color:rgb(252 211 77 / var(--tw-text-opacity, 1))}.text-cyan-200{--tw-text-opacity:1;color:rgb(165 243 252 / var(--tw-text-opacity, 1))}.text-cyan-300{--tw-text-opacity:1;color:rgb(103 232 249 / var(--tw-text-opacity, 1))}.text-cyan-400{--tw-text-opacity:1;color:rgb(34 211 238 / var(--tw-text-opacity, 1))}.text-emerald-300{--tw-text-opacity:1;color:rgb(110 231 183 / var(--tw-text-opacity, 1))}.text-rose-200{--tw-text-opacity:1;color:rgb(254 205 211 / var(--tw-text-opacity, 1))}.text-rose-300{--tw-text-opacity:1;color:rgb(253 164 175 / var(--tw-text-opacity, 1))}.text-rose-400{--tw-text-opacity:1;color:rgb(251 113 133 / var(--tw-text-opacity, 1))}.text-slate-100{--tw-text-opacity:1;color:rgb(241 245 249 / var(--tw-text-opacity, 1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-950{--tw-text-opacity:1;color:rgb(2 6 23 / var(--tw-text-opacity, 1))}.text-violet-300{--tw-text-opacity:1;color:rgb(196 181 253 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-violet-400{--tw-text-opacity:1;color:rgb(167 139 250 / var(--tw-text-opacity, 1))}.placeholder-slate-500::placeholder{--tw-placeholder-opacity:1;color:rgb(100 116 139 / var(--tw-placeholder-opacity, 1))}.accent-violet-500{accent-color:#8b5cf6}.opacity-75{opacity:0.75}.opacity-80{opacity:0.8}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-cyan-500\/20{--tw-shadow-color:rgb(6 182 212 / 0.2);--tw-shadow:var(--tw-shadow-colored)}.shadow-emerald-500\/25{--tw-shadow-color:rgb(16 185 129 / 0.25);--tw-shadow:var(--tw-shadow-colored)}.shadow-rose-500\/20{--tw-shadow-color:rgb(244 63 94 / 0.2);--tw-shadow:var(--tw-shadow-colored)}.shadow-cyan-400{--tw-shadow-color:#22d3ee;--tw-shadow:var(--tw-shadow-colored)}.shadow-violet-400{--tw-shadow-color:#a78bfa;--tw-shadow:var(--tw-shadow-colored)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-75{transition-duration:75ms}.hover\:bg-amber-300:hover{--tw-bg-opacity:1;background-color:rgb(252 211 77 / var(--tw-bg-opacity, 1))}.hover\:bg-amber-500\/35:hover{background-color:rgb(245 158 11 / 0.35)}.hover\:bg-cyan-500\/30:hover{background-color:rgb(6 182 212 / 0.3)}.hover\:bg-emerald-400:hover{--tw-bg-opacity:1;background-color:rgb(52 211 153 / var(--tw-bg-opacity, 1))}.hover\:bg-rose-400:hover{--tw-bg-opacity:1;background-color:rgb(251 113 133 / var(--tw-bg-opacity, 1))}.hover\:bg-rose-500\/35:hover{background-color:rgb(244 63 94 / 0.35)}.hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-800:hover{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.hover\:bg-violet-500\/35:hover{background-color:rgb(139 92 246 / 0.35)}.hover\:bg-cyan-400:hover{--tw-bg-opacity:1;background-color:rgb(34 211 238 / var(--tw-bg-opacity, 1))}.hover\:bg-cyan-500\/25:hover{background-color:rgb(6 182 212 / 0.25)}.hover\:bg-rose-500:hover{--tw-bg-opacity:1;background-color:rgb(244 63 94 / var(--tw-bg-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.focus\:border-rose-400:focus{--tw-border-opacity:1;border-color:rgb(251 113 133 / var(--tw-border-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.disabled\:opacity-40:disabled{opacity:0.4}@media (min-width: 640px){.sm\:inline{display:inline}.sm\:grid-cols-6{grid-template-columns:repeat(6, minmax(0, 1fr))}.sm\:text-lg{font-size:1.125rem;line-height:1.75rem}.sm\:text-sm{font-size:0.875rem;line-height:1.25rem}.sm\:text-2xl{font-size:1.5rem;line-height:2rem}.sm\:text-base{font-size:1rem;line-height:1.5rem}}@media (min-width: 1024px){.lg\:col-span-5{grid-column:span 5 / span 5}.lg\:col-span-7{grid-column:span 7 / span 7}.lg\:h-screen{height:100vh}.lg\:grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}.lg\:flex-nowrap{flex-wrap:nowrap}.lg\:overflow-hidden{overflow:hidden}.lg\:overflow-y-auto{overflow-y:auto}}</style><style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0px}.inset-x-3{left:0.75rem;right:0.75rem}.right-1\.5{right:0.375rem}.top-1\.5{top:0.375rem}.top-1\/2{top:50%}.z-30{z-index:30}.z-0{z-index:0}.z-10{z-index:10}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:0.25rem}.mb-1\.5{margin-bottom:0.375rem}.-mt-3\.5{margin-top:-0.875rem}.mb-2{margin-bottom:0.5rem}.mr-1{margin-right:0.25rem}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.block{display:block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-32{height:8rem}.h-8{height:2rem}.h-full{height:100%}.h-2\.5{height:0.625rem}.h-3{height:0.75rem}.min-h-0{min-height:0px}.min-h-\[145px\]{min-height:145px}.min-h-\[165px\]{min-height:165px}.min-h-\[170px\]{min-height:170px}.min-h-\[195px\]{min-height:195px}.min-h-\[225px\]{min-height:225px}.w-10{width:2.5rem}.w-8{width:2rem}.w-full{width:100%}.w-2\.5{width:0.625rem}.w-3\/4{width:75%}.w-9{width:2.25rem}.min-w-0{min-width:0px}.min-w-\[280px\]{min-width:280px}.max-w-\[1920px\]{max-width:1920px}.flex-1{flex:1 1 0%}.flex-\[1\.25\]{flex:1.25}.shrink-0{flex-shrink:0}.-translate-y-1\/2{--tw-translate-y:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite}.cursor-crosshair{cursor:crosshair}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;user-select:none}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.grid-cols-5{grid-template-columns:repeat(5, minmax(0, 1fr))}.grid-cols-8{grid-template-columns:repeat(8, minmax(0, 1fr))}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.items-baseline{align-items:baseline}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.overflow-hidden{overflow:hidden}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.rounded-md{border-radius:0.375rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-dashed{border-style:dashed}.border-amber-500\/40{border-color:rgb(245 158 11 / 0.4)}.border-cyan-400{--tw-border-opacity:1;border-color:rgb(34 211 238 / var(--tw-border-opacity, 1))}.border-cyan-500\/30{border-color:rgb(6 182 212 / 0.3)}.border-cyan-500\/40{border-color:rgb(6 182 212 / 0.4)}.border-rose-500\/40{border-color:rgb(244 63 94 / 0.4)}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.border-slate-800\/80{border-color:rgb(30 41 59 / 0.8)}.border-violet-500\/30{border-color:rgb(139 92 246 / 0.3)}.border-violet-500\/40{border-color:rgb(139 92 246 / 0.4)}.border-slate-700\/70{border-color:rgb(51 65 85 / 0.7)}.border-slate-800\/90{border-color:rgb(30 41 59 / 0.9)}.border-violet-400{--tw-border-opacity:1;border-color:rgb(167 139 250 / var(--tw-border-opacity, 1))}.bg-amber-400{--tw-bg-opacity:1;background-color:rgb(251 191 36 / var(--tw-bg-opacity, 1))}.bg-amber-500\/15{background-color:rgb(245 158 11 / 0.15)}.bg-amber-500\/20{background-color:rgb(245 158 11 / 0.2)}.bg-black{--tw-bg-opacity:1;background-color:rgb(0 0 0 / var(--tw-bg-opacity, 1))}.bg-cyan-500{--tw-bg-opacity:1;background-color:rgb(6 182 212 / var(--tw-bg-opacity, 1))}.bg-cyan-500\/15{background-color:rgb(6 182 212 / 0.15)}.bg-cyan-500\/20{background-color:rgb(6 182 212 / 0.2)}.bg-emerald-500{--tw-bg-opacity:1;background-color:rgb(16 185 129 / var(--tw-bg-opacity, 1))}.bg-rose-500{--tw-bg-opacity:1;background-color:rgb(244 63 94 / var(--tw-bg-opacity, 1))}.bg-rose-500\/20{background-color:rgb(244 63 94 / 0.2)}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-800\/80{background-color:rgb(30 41 59 / 0.8)}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-slate-900\/90{background-color:rgb(15 23 42 / 0.9)}.bg-slate-900\/95{background-color:rgb(15 23 42 / 0.95)}.bg-slate-950{--tw-bg-opacity:1;background-color:rgb(2 6 23 / var(--tw-bg-opacity, 1))}.bg-slate-950\/80{background-color:rgb(2 6 23 / 0.8)}.bg-slate-950\/90{background-color:rgb(2 6 23 / 0.9)}.bg-violet-500\/20{background-color:rgb(139 92 246 / 0.2)}.bg-cyan-400{--tw-bg-opacity:1;background-color:rgb(34 211 238 / var(--tw-bg-opacity, 1))}.bg-rose-600\/90{background-color:rgb(225 29 72 / 0.9)}.bg-slate-800\/90{background-color:rgb(30 41 59 / 0.9)}.bg-slate-950\/85{background-color:rgb(2 6 23 / 0.85)}.bg-violet-400{--tw-bg-opacity:1;background-color:rgb(167 139 250 / var(--tw-bg-opacity, 1))}.bg-violet-500\/25{background-color:rgb(139 92 246 / 0.25)}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-cyan-400{--tw-gradient-from:#22d3ee var(--tw-gradient-from-position);--tw-gradient-to:rgb(34 211 238 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-rose-950\/45{--tw-gradient-from:rgb(76 5 25 / 0.45) var(--tw-gradient-from-position);--tw-gradient-to:rgb(76 5 25 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-emerald-400{--tw-gradient-from:#34d399 var(--tw-gradient-from-position);--tw-gradient-to:rgb(52 211 153 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.via-emerald-400{--tw-gradient-to:rgb(52 211 153 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #34d399 var(--tw-gradient-via-position), var(--tw-gradient-to)}.via-slate-950{--tw-gradient-to:rgb(2 6 23 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #020617 var(--tw-gradient-via-position), var(--tw-gradient-to)}.via-cyan-400{--tw-gradient-to:rgb(34 211 238 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #22d3ee var(--tw-gradient-via-position), var(--tw-gradient-to)}.to-slate-950{--tw-gradient-to:#020617 var(--tw-gradient-to-position)}.to-violet-500{--tw-gradient-to:#8b5cf6 var(--tw-gradient-to-position)}.to-rose-500{--tw-gradient-to:#f43f5e var(--tw-gradient-to-position)}.p-1{padding:0.25rem}.p-2{padding:0.5rem}.p-2\.5{padding:0.625rem}.p-3{padding:0.75rem}.p-3\.5{padding:0.875rem}.px-1\.5{padding-left:0.375rem;padding-right:0.375rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.pr-0\.5{padding-right:0.125rem}.pr-1{padding-right:0.25rem}.text-center{text-align:center}.text-right{text-align:right}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xs{font-size:0.75rem;line-height:1rem}.text-\[9px\]{font-size:9px}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-medium{font-weight:500}.font-normal{font-weight:400}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.tracking-wider{letter-spacing:0.05em}.text-amber-200{--tw-text-opacity:1;color:rgb(253 230 138 / var(--tw-text-opacity, 1))}.text-amber-300{--tw-text-opacity:1;color:rgb(252 211 77 / var(--tw-text-opacity, 1))}.text-cyan-200{--tw-text-opacity:1;color:rgb(165 243 252 / var(--tw-text-opacity, 1))}.text-cyan-300{--tw-text-opacity:1;color:rgb(103 232 249 / var(--tw-text-opacity, 1))}.text-cyan-400{--tw-text-opacity:1;color:rgb(34 211 238 / var(--tw-text-opacity, 1))}.text-emerald-300{--tw-text-opacity:1;color:rgb(110 231 183 / var(--tw-text-opacity, 1))}.text-rose-200{--tw-text-opacity:1;color:rgb(254 205 211 / var(--tw-text-opacity, 1))}.text-rose-300{--tw-text-opacity:1;color:rgb(253 164 175 / var(--tw-text-opacity, 1))}.text-rose-400{--tw-text-opacity:1;color:rgb(251 113 133 / var(--tw-text-opacity, 1))}.text-slate-100{--tw-text-opacity:1;color:rgb(241 245 249 / var(--tw-text-opacity, 1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-950{--tw-text-opacity:1;color:rgb(2 6 23 / var(--tw-text-opacity, 1))}.text-violet-300{--tw-text-opacity:1;color:rgb(196 181 253 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-violet-400{--tw-text-opacity:1;color:rgb(167 139 250 / var(--tw-text-opacity, 1))}.placeholder-slate-500::placeholder{--tw-placeholder-opacity:1;color:rgb(100 116 139 / var(--tw-placeholder-opacity, 1))}.accent-violet-500{accent-color:#8b5cf6}.opacity-75{opacity:0.75}.opacity-80{opacity:0.8}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-cyan-500\/20{--tw-shadow-color:rgb(6 182 212 / 0.2);--tw-shadow:var(--tw-shadow-colored)}.shadow-emerald-500\/25{--tw-shadow-color:rgb(16 185 129 / 0.25);--tw-shadow:var(--tw-shadow-colored)}.shadow-rose-500\/20{--tw-shadow-color:rgb(244 63 94 / 0.2);--tw-shadow:var(--tw-shadow-colored)}.shadow-cyan-400{--tw-shadow-color:#22d3ee;--tw-shadow:var(--tw-shadow-colored)}.shadow-violet-400{--tw-shadow-color:#a78bfa;--tw-shadow:var(--tw-shadow-colored)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-75{transition-duration:75ms}.hover\:bg-amber-300:hover{--tw-bg-opacity:1;background-color:rgb(252 211 77 / var(--tw-bg-opacity, 1))}.hover\:bg-amber-500\/35:hover{background-color:rgb(245 158 11 / 0.35)}.hover\:bg-cyan-500\/30:hover{background-color:rgb(6 182 212 / 0.3)}.hover\:bg-emerald-400:hover{--tw-bg-opacity:1;background-color:rgb(52 211 153 / var(--tw-bg-opacity, 1))}.hover\:bg-rose-400:hover{--tw-bg-opacity:1;background-color:rgb(251 113 133 / var(--tw-bg-opacity, 1))}.hover\:bg-rose-500\/35:hover{background-color:rgb(244 63 94 / 0.35)}.hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-800:hover{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.hover\:bg-violet-500\/35:hover{background-color:rgb(139 92 246 / 0.35)}.hover\:bg-cyan-400:hover{--tw-bg-opacity:1;background-color:rgb(34 211 238 / var(--tw-bg-opacity, 1))}.hover\:bg-cyan-500\/25:hover{background-color:rgb(6 182 212 / 0.25)}.hover\:bg-rose-500:hover{--tw-bg-opacity:1;background-color:rgb(244 63 94 / var(--tw-bg-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.focus\:border-rose-400:focus{--tw-border-opacity:1;border-color:rgb(251 113 133 / var(--tw-border-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.disabled\:opacity-40:disabled{opacity:0.4}@media (min-width: 640px){.sm\:inline{display:inline}.sm\:grid-cols-6{grid-template-columns:repeat(6, minmax(0, 1fr))}.sm\:text-lg{font-size:1.125rem;line-height:1.75rem}.sm\:text-sm{font-size:0.875rem;line-height:1.25rem}.sm\:text-2xl{font-size:1.5rem;line-height:2rem}.sm\:text-base{font-size:1rem;line-height:1.5rem}}@media (min-width: 1024px){.lg\:col-span-5{grid-column:span 5 / span 5}.lg\:col-span-7{grid-column:span 7 / span 7}.lg\:h-screen{height:100vh}.lg\:grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}.lg\:flex-nowrap{flex-wrap:nowrap}.lg\:overflow-hidden{overflow:hidden}.lg\:overflow-y-auto{overflow-y:auto}}</style></head>
+
+<body class="lg:h-screen lg:overflow-hidden flex flex-col bg-slate-950 text-slate-100 select-none">
+
+    <header class="bg-slate-900/95 border-b border-slate-800 px-4 py-2 shrink-0 z-30">
+        <div class="max-w-[1920px] mx-auto flex flex-wrap lg:flex-nowrap items-center justify-between gap-3">
+            <!-- 좌측 로고 및 타이틀 -->
+            <div class="flex items-center gap-3 shrink-0">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 via-emerald-400 to-violet-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                    <i class="fa-solid fa-wave-square text-slate-950 text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white">
+                        눈으로 보는 소리 실험실 <span class="text-cyan-400 font-semibold">&amp; 5-Band 그래픽 이퀄라이저</span>
+                    </h1>
+                </div>
+            </div>
+
+            <!-- 중앙 실시간 실험 해설 배너 -->
+            <div class="flex-1 min-w-[280px] bg-slate-950/90 border border-cyan-500/30 rounded-xl px-3.5 py-1.5 flex items-center gap-3 shadow-inner">
+                <div class="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/40 flex items-center justify-center shrink-0 text-cyan-300">
+                    <i class="fa-solid fa-lightbulb text-sm animate-pulse"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] font-bold text-cyan-400 uppercase tracking-wider">실시간 실험 해설</span>
+                        <span id="commentary-tag" class="text-[10px] px-1.5 py-0.5 bg-violet-500/20 text-violet-300 rounded border border-violet-500/30">체험 가이드</span>
+                    </div>
+                    <p id="live-commentary" class="text-xs sm:text-sm text-slate-200 font-medium truncate">
+                        왼쪽에서 <span class="text-cyan-300 font-bold">피아노 &amp; 파형</span> 또는 <span class="text-rose-300 font-bold">유튜브 · 음악파일</span>을 선택하고 <span class="text-violet-300 font-bold">5-Band 그래픽 이퀄라이저</span>를 조절해 보세요!
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+                <button id="master-Toggle-Btn" onclick="window.toggleSoundPower()" class="px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/25 transition flex items-center gap-2">
+                    <i id="master-btn-icon" class="fa-solid fa-volume-high"></i>
+                    <span id="master-btn-text">소리 켜기 (Space)</span>
+                </button>
+                <button onclick="window.downloadStandaloneHTML()" title="HTML 파일로 저장해 크롬에서 열면 모든 하드웨어 권한이 100% 허용됩니다" class="px-3 py-2 rounded-xl font-bold text-xs sm:text-sm bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-download"></i>
+                    <span class="hidden sm:inline">HTML 저장</span>
+                </button>
+                <button onclick="window.toggleFullscreen()" title="전체화면 전환" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+                    <i class="fa-solid fa-expand text-sm"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 min-h-0 max-w-[1920px] w-full mx-auto p-3 grid grid-cols-1 lg:grid-cols-12 gap-3 lg:overflow-hidden">
+
+        <!-- ==================== 좌측 컨트롤 컬럼 (5칸) ==================== -->
+        <section class="lg:col-span-5 flex flex-col gap-3 min-h-0 lg:overflow-y-auto pr-0.5">
+
+            <!-- 1. 오디오 입력 소스 선택 패널 -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 flex flex-col gap-2.5 shadow-xl shrink-0">
+                <!-- 탭 전환 버튼 (2가지 모드: 피아노 & 파형 / 유튜브 · 음악파일) -->
+                <div class="grid grid-cols-2 gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                    <button id="tab-btn-synth" onclick="window.switchInputSource('synth')" class="py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 bg-cyan-500 text-slate-950 shadow">
+                        <i class="fa-solid fa-keyboard"></i>
+                        <span>피아노 &amp; 파형 실험</span>
+                    </button>
+                    <button id="tab-btn-music" onclick="window.switchInputSource('music')" class="py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 text-slate-300 hover:text-white">
+                        <i class="fa-brands fa-youtube text-rose-400"></i>
+                        <span>유튜브 · 음악파일</span>
+                    </button>
+                </div>
+
+                <!-- [탭 1] 피아노 건반 & 파형 실험 컨트롤 -->
+                <div id="panel-synth" class="flex flex-col gap-2.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-music text-cyan-400"></i>
+                            미니 피아노 건반 <span class="text-[11px] text-slate-400 font-normal">(클릭 또는 키보드 A~K)</span>
+                        </span>
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="window.playChordDemo()" id="btn-chord-mode" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-violet-500/20 hover:bg-violet-500/35 text-violet-300 border border-violet-500/40 transition">
+                                🎶 도+미+솔 화음
+                            </button>
+                            <button onclick="window.startHarmonicAutoDemo()" id="btn-auto-demo" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500/20 hover:bg-amber-500/35 text-amber-300 border border-amber-500/40 transition">
+                                ✨ 배음 자동 시연
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 8개 음계 피아노 건반 -->
+                    <div class="grid grid-cols-8 gap-1.5">
+                        <button onclick="window.selectPianoNote(261.63, '도 (C4)', 0)" data-note-idx="0" class="piano-key active-key bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl py-2 flex flex-col items-center justify-between">
+                            <span class="text-[10px] font-mono opacity-75">A</span>
+                            <span class="text-sm font-extrabold">도</span>
+                            <span class="text-[10px] font-mono opacity-80">262Hz</span>
+                        </button>
+                        <button onclick="window.selectPianoNote(293.66, '레 (D4)', 1)" data-note-idx="1" class="piano-key bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl py-2 flex flex-col items-center justify-between">
+                            <span class="text-[10px] font-mono opacity-75">S</span>
+                            <span class="text-sm font-extrabold">레</span>
+                            <span class="text-[10px] font-mono opacity-80">294Hz</span>
+                        </button>
+                        <button onclick="window.selectPianoNote(329.63, '미 (E4)', 2)" data-note-idx="2" class="piano-key bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl py-2 flex flex-col items-center justify-between">
+                            <span class="text-[10px] font-mono opacity-75">D</span>
+                            <span class="text-sm font-extrabold">미</span>
+                            <span class="text-[10px] font-mono opacity-80">330Hz</span>
+                        </button>
+                        <button onclick="window.selectPianoNote(349.23, '파 (F4)', 3)" data-note-idx="3" class="piano-key bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl py-2 flex flex-col items-center justify-between">
+                            <span class="text-[10px] font-mono opacity-75">F</span>
+                            <span class="text-sm font-extrabold">파</span>
+                            <span class="text-[10px] font-mono opacity-80">349Hz</span>
+                        </button>
+                        <button onclick="window.selectPianoNote(392.00, '솔 (G4)', 4)" data-note-idx="4" class="piano-key bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl py-2 flex flex-col items-center justify-between">
+                            <span class="text-[10px] font-mono opacity-75">G</span>
+                            <span class="text-sm font-extrabold">솔</span>
+                            <span class="text-[10px] font-mono opacity-80">392Hz</span>
+                        </button>
+                        <button onclick="window.selectPianoNote(440.00, '라 (A4)', 5)" data-note-idx="5" class="piano-key bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl py-2 flex flex-col items-center justify-between">
+                            <span class="text-[10px] font-mono opacity-75">H</span>
+                            <span class="text-sm font-extrabold">라</span>
+                            <span class="text-[10px] font-mono opacity-80">440Hz</span>
+                        </button>
+                        <button onclick="window.selectPianoNote(493.88, '시 (B4)', 6)" data-note-idx="6" class="piano-key bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl py-2 flex flex-col items-center justify-between">
+                            <span class="text-[10px] font-mono opacity-75">J</span>
+                            <span class="text-sm font-extrabold">시</span>
+                            <span class="text-[10px] font-mono opacity-80">494Hz</span>
+                        </button>
+                        <button onclick="window.selectPianoNote(523.25, '높은 도 (C5)', 7)" data-note-idx="7" class="piano-key bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl py-2 flex flex-col items-center justify-between">
+                            <span class="text-[10px] font-mono opacity-75">K</span>
+                            <span class="text-sm font-extrabold">도↑</span>
+                            <span class="text-[10px] font-mono opacity-80">523Hz</span>
+                        </button>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xs font-bold text-slate-300">소리의 맵시 (파형 모양 선택)</span>
+                            <span id="wave-desc-badge" class="text-[11px] text-cyan-300 font-medium">기본 진동 1개만 있는 가장 순수한 소리</span>
+                        </div>
+                        <div class="grid grid-cols-5 gap-1.5">
+                            <button onclick="window.selectWaveform('sine')" id="wave-btn-sine" class="wave-btn py-2 px-1.5 rounded-xl border text-xs font-bold transition flex flex-col items-center gap-1 bg-cyan-500/20 border-cyan-400 text-cyan-200">
+                                <span>〰️ 사인파</span>
+                                <span class="text-[10px] font-normal opacity-80">맑은 소리</span>
+                            </button>
+                            <button onclick="window.selectWaveform('square')" id="wave-btn-square" class="wave-btn py-2 px-1.5 rounded-xl border border-slate-700 bg-slate-800/80 text-slate-300 hover:bg-slate-800 text-xs font-bold transition flex flex-col items-center gap-1">
+                                <span>⊓⊔ 네모파</span>
+                                <span class="text-[10px] font-normal opacity-80">8비트 게임</span>
+                            </button>
+                            <button onclick="window.selectWaveform('sawtooth')" id="wave-btn-sawtooth" class="wave-btn py-2 px-1.5 rounded-xl border border-slate-700 bg-slate-800/80 text-slate-300 hover:bg-slate-800 text-xs font-bold transition flex flex-col items-center gap-1">
+                                <span>/|/| 톱니파</span>
+                                <span class="text-[10px] font-normal opacity-80">일렉 신스</span>
+                            </button>
+                            <button onclick="window.selectWaveform('triangle')" id="wave-btn-triangle" class="wave-btn py-2 px-1.5 rounded-xl border border-slate-700 bg-slate-800/80 text-slate-300 hover:bg-slate-800 text-xs font-bold transition flex flex-col items-center gap-1">
+                                <span>/\△ 삼각파</span>
+                                <span class="text-[10px] font-normal opacity-80">고운 오르골</span>
+                            </button>
+                            <button onclick="window.selectWaveform('noise')" id="wave-btn-noise" class="wave-btn py-2 px-1.5 rounded-xl border border-slate-700 bg-slate-800/80 text-slate-300 hover:bg-slate-800 text-xs font-bold transition flex flex-col items-center gap-1">
+                                <span>🌧️ 백색소음</span>
+                                <span class="text-[10px] font-normal opacity-80">EQ 테스트</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 주파수 미세 조절 & 볼륨 슬라이더 -->
+                    <div class="grid grid-cols-2 gap-3 bg-slate-950/80 p-2.5 rounded-xl border border-slate-800/80">
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-400 font-medium">높낮이 미세 조절</span>
+                                <span id="freq-slider-label" class="font-mono font-bold text-cyan-300">262 Hz</span>
+                            </div>
+                            <input id="freq-slider" type="range" min="60" max="2000" value="262" class="w-full horiz-slider" oninput="window.onFreqSliderInput(this.value)">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-400 font-medium">전체 소리 크기 (볼륨)</span>
+                                <span id="vol-slider-label" class="font-mono font-bold text-emerald-300">75%</span>
+                            </div>
+                            <input id="vol-slider" type="range" min="0" max="100" value="75" class="w-full horiz-slider" oninput="window.onVolumeChange(this.value)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- [탭 2] 유튜브 실시간 오디오 캡처 & 로컬 음악 파일(MP3/WAV) -->
+                <div id="panel-music" class="hidden flex-col gap-2.5">
+                    <!-- 1) 유튜브 실시간 사운드 연동 섹션 -->
+                    <div class="bg-gradient-to-br from-rose-950/45 via-slate-950 to-slate-950 border border-rose-500/40 rounded-xl p-3 flex flex-col gap-2">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-1.5">
+                                <i class="fa-brands fa-youtube text-rose-400 text-base"></i>
+                                <span class="text-xs font-extrabold text-white">유튜브 실시간 사운드 &amp; 5-Band EQ 연동</span>
+                            </div>
+                            <span id="yt-capture-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-semibold">
+                                연결 대기 중
+                            </span>
+                        </div>
+
+                        <!-- 2단계 안내 및 직관적인 실행 버튼 -->
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-lg p-2 text-[11px] text-slate-300 leading-relaxed">
+                            <div class="flex items-center gap-1.5 font-bold text-rose-300 mb-1">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span>유튜브 모든 영상을 100% 분석 &amp; 이퀄라이저 적용하는 방법</span>
+                            </div>
+                            <p class="text-[11px] text-slate-300">
+                                <b>1단계:</b> 아래에서 유튜브 영상을 새 탭으로 열거나 인앱 플레이어로 재생하세요.<br>
+                                <b>2단계:</b> <span class="text-rose-300 font-bold">[유튜브 탭 오디오 캡처 연결]</span>을 누른 뒤, 브라우저 창에서 <b>유튜브 탭</b>을 고르고 하단의 <b>[탭 오디오도 공유]</b>를 켜면 즉시 5-Band EQ와 FFT 그래프가 작동합니다!
+                            </p>
+                        </div>
+
+                        <!-- 유튜브 URL 입력 및 열기 버튼 -->
+                        <div class="flex gap-1.5">
+                            <input id="yt-url-input" type="text" placeholder="유튜브 주소(URL) 또는 검색어 입력 (비워두면 유튜브 바로 열기)" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-400">
+                            <button onclick="window.openYouTubeInNewTab()" class="px-2.5 py-1.5 rounded-lg font-bold text-xs bg-slate-800 hover:bg-slate-700 text-rose-300 border border-rose-500/40 transition shrink-0 flex items-center gap-1">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                <span>1. 새 탭에서 유튜브 열기</span>
+                            </button>
+                            <button onclick="window.loadYouTubeFromInput()" class="px-2.5 py-1.5 rounded-lg font-bold text-xs bg-rose-500/20 hover:bg-rose-500/35 text-rose-200 border border-rose-500/40 transition shrink-0">
+                                인앱 재생
+                            </button>
+                        </div>
+
+                        <!-- 핵심: 탭 오디오 캡처 연결 버튼 -->
+                        <button onclick="window.connectYouTubeTabAudio()" id="btn-tab-audio" class="w-full py-2 px-3 rounded-xl font-bold text-xs bg-rose-500 hover:bg-rose-400 text-white shadow-lg shadow-rose-500/20 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-satellite-dish"></i>
+                            <span id="tab-audio-btn-text">2. 유튜브 탭 오디오 캡처 연결 (5-Band EQ &amp; FFT 작동)</span>
+                        </button>
+
+                        <!-- 미리보기(iframe) 권한 차단 시 자동 표시되는 도우미 박스 -->
+                        <div id="iframe-permission-alert" class="hidden bg-amber-500/15 border border-amber-500/40 rounded-lg p-2 text-[11px] text-amber-200 flex items-center justify-between gap-2">
+                            <div>
+                                <b>⚠️ 현재 우측 미리보기(iframe) 안에서는 브라우저가 화면 캡처 팝업을 차단합니다.</b><br>
+                                오른쪽 버튼을 눌러 <b>HTML 파일</b>로 저장해 열면 유튜브 캡처가 100% 작동합니다!
+                            </div>
+                            <div class="flex flex-col gap-1 shrink-0">
+                                <button onclick="window.downloadStandaloneHTML()" class="px-2.5 py-1 rounded bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-[11px]">
+                                    💾 HTML 저장
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 인앱 유튜브 임베드 플레이어 영역 (영상 선택 시 표시) -->
+                        <div id="yt-player-wrapper" class="hidden relative w-full h-32 bg-black rounded-lg overflow-hidden border border-slate-800">
+                            <iframe id="yt-iframe" class="w-full h-full" src="" title="YouTube video player" frameborder="0" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen=""></iframe>
+                            <div class="absolute top-1.5 right-1.5 flex gap-1">
+                                <button onclick="window.openYouTubeInNewTab()" class="px-2 py-0.5 rounded bg-rose-600/90 text-[10px] font-bold text-white hover:bg-rose-500">
+                                    재생 안 될 때 새 탭으로 열기 ↗
+                                </button>
+                                <button onclick="window.closeYouTubeEmbed()" class="px-2 py-0.5 rounded bg-slate-950/85 text-[10px] font-bold text-slate-300 hover:text-white border border-slate-700">
+                                    닫기 ✕
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2) 로컬 음악 파일(MP3/WAV/OGG) 업로드 & 재생 컨트롤 -->
+                    <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-2.5 flex flex-col gap-2">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="min-w-0">
+                                <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
+                                    <i class="fa-solid fa-file-audio text-cyan-400"></i>
+                                    <span>내 컴퓨터 음악 파일 넣기 (MP3 · WAV · M4A)</span>
+                                </h4>
+                                <p id="file-name-label" class="text-[10px] text-slate-400 truncate mt-0.5">
+                                    미리보기 창에서도 권한 설정 없이 즉시 5-Band EQ와 FFT 분석이 작동합니다
+                                </p>
+                            </div>
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <label class="py-1.5 px-2.5 rounded-lg font-bold text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 cursor-pointer transition">
+                                    <i class="fa-solid fa-folder-open mr-1"></i>파일 선택
+                                    <input type="file" accept="audio/*" class="hidden" onchange="window.handleAudioFileUpload(event)">
+                                </label>
+                                <button id="btn-file-play" onclick="window.toggleUploadedFilePlay()" disabled="" class="py-1.5 px-3 rounded-lg font-bold text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 disabled:opacity-40 transition">
+                                    <i class="fa-solid fa-play"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- 오디오 파일 재생 진행 바 (Seek Bar) -->
+                        <div class="flex items-center gap-2">
+                            <span id="file-time-current" class="text-[10px] font-mono text-slate-400 w-9">00:00</span>
+                            <input id="file-seek-slider" type="range" min="0" max="100" value="0" disabled="" class="flex-1 horiz-slider disabled:opacity-40" oninput="window.onFileSeekInput(this.value)">
+                            <span id="file-time-total" class="text-[10px] font-mono text-slate-400 w-9 text-right">00:00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. 5-Band 그래픽 이퀄라이저 패널 -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 flex-1 flex flex-col justify-between gap-2.5 shadow-xl">
+                <!-- 상단 헤더 & 백색소음 테스트 버튼 -->
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-sm sm:text-base font-extrabold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-sliders text-violet-400"></i>
+                                <span>5-Band 그래픽 이퀄라이저</span>
+                            </h2>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/30 font-semibold">음색 디자이너</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            슬라이더를 위아래로 드래그하거나 장르 프리셋을 눌러 주파수 대역별 에너지를 조절해 보세요!
+                        </p>
+                    </div>
+                    <button onclick="window.startWhiteNoiseEQTest()" class="px-2.5 py-1.5 rounded-xl text-[11px] font-bold bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/40 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>EQ 모양 한눈에 보기</span>
+                    </button>
+                </div>
+
+                <!-- 6종 음악 장르 프리셋 버튼 -->
+                <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+                    <button onclick="window.applyEQPreset('flat')" id="preset-flat" class="eq-preset-btn py-1.5 px-2 rounded-lg text-[11px] font-bold border bg-violet-500/25 border-violet-400 text-white transition">
+                        🎵 기본(Flat)
+                    </button>
+                    <button onclick="window.applyEQPreset('bass')" id="preset-bass" class="eq-preset-btn py-1.5 px-2 rounded-lg text-[11px] font-bold border border-slate-700 bg-slate-800/90 text-slate-300 hover:bg-slate-800 transition">
+                        🔥 베이스 강조
+                    </button>
+                    <button onclick="window.applyEQPreset('vocal')" id="preset-vocal" class="eq-preset-btn py-1.5 px-2 rounded-lg text-[11px] font-bold border border-slate-700 bg-slate-800/90 text-slate-300 hover:bg-slate-800 transition">
+                        🎤 보컬 선명
+                    </button>
+                    <button onclick="window.applyEQPreset('kpop')" id="preset-kpop" class="eq-preset-btn py-1.5 px-2 rounded-lg text-[11px] font-bold border border-slate-700 bg-slate-800/90 text-slate-300 hover:bg-slate-800 transition">
+                        ✨ K-POP
+                    </button>
+                    <button onclick="window.applyEQPreset('rock')" id="preset-rock" class="eq-preset-btn py-1.5 px-2 rounded-lg text-[11px] font-bold border border-slate-700 bg-slate-800/90 text-slate-300 hover:bg-slate-800 transition">
+                        🎸 록 (V자형)
+                    </button>
+                    <button onclick="window.applyEQPreset('acoustic')" id="preset-acoustic" class="eq-preset-btn py-1.5 px-2 rounded-lg text-[11px] font-bold border border-slate-700 bg-slate-800/90 text-slate-300 hover:bg-slate-800 transition">
+                        ☕ 어쿠스틱
+                    </button>
+                </div>
+
+                <div class="relative flex-1 bg-slate-950/90 border border-slate-800/90 rounded-2xl p-3 flex flex-col justify-between overflow-hidden min-h-[170px]">
+                    <!-- 배경 EQ 베지어 곡선 캔버스 -->
+                    <canvas id="eq-curve-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-0"></canvas>
+
+                    <!-- 0dB 중심 가이드 라인 -->
+                    <div class="pointer-events-none absolute inset-x-3 top-1/2 -translate-y-1/2 border-t border-dashed border-slate-700/70 z-0 flex justify-end">
+                        <span class="text-[9px] font-mono text-slate-500 pr-1 -mt-3.5">0 dB</span>
+                    </div>
+
+                    <!-- 5개 수직 슬라이더 그리드 -->
+                    <div class="relative z-10 grid grid-cols-5 gap-2 flex-1 items-center">
+                        <!-- Band 0: 60Hz -->
+                        <div class="flex flex-col items-center justify-between h-full py-0.5">
+                            <span id="eq-val-0" class="text-[11px] font-mono font-bold text-cyan-300">0 dB</span>
+                            <div class="eq-vert-wrapper" data-band="0">
+                                <div class="eq-vert-track">
+                                    <div id="eq-fill-0" class="eq-vert-fill" style="bottom: 50%; height: 0%;"></div>
+                                    <div id="eq-thumb-0" class="eq-vert-thumb" style="top: 50%;"></div>
+                                </div>
+                            </div>
+                            <div class="text-center leading-tight">
+                                <div class="text-xs font-extrabold text-white">60Hz</div>
+                                <div class="text-[10px] text-slate-400">쿵쾅 초저음</div>
+                            </div>
+                        </div>
+
+                        <!-- Band 1: 250Hz -->
+                        <div class="flex flex-col items-center justify-between h-full py-0.5">
+                            <span id="eq-val-1" class="text-[11px] font-mono font-bold text-cyan-300">0 dB</span>
+                            <div class="eq-vert-wrapper" data-band="1">
+                                <div class="eq-vert-track">
+                                    <div id="eq-fill-1" class="eq-vert-fill" style="bottom: 50%; height: 0%;"></div>
+                                    <div id="eq-thumb-1" class="eq-vert-thumb" style="top: 50%;"></div>
+                                </div>
+                            </div>
+                            <div class="text-center leading-tight">
+                                <div class="text-xs font-extrabold text-white">250Hz</div>
+                                <div class="text-[10px] text-slate-400">따뜻한 중저음</div>
+                            </div>
+                        </div>
+
+                        <!-- Band 2: 1kHz -->
+                        <div class="flex flex-col items-center justify-between h-full py-0.5">
+                            <span id="eq-val-2" class="text-[11px] font-mono font-bold text-cyan-300">0 dB</span>
+                            <div class="eq-vert-wrapper" data-band="2">
+                                <div class="eq-vert-track">
+                                    <div id="eq-fill-2" class="eq-vert-fill" style="bottom: 50%; height: 0%;"></div>
+                                    <div id="eq-thumb-2" class="eq-vert-thumb" style="top: 50%;"></div>
+                                </div>
+                            </div>
+                            <div class="text-center leading-tight">
+                                <div class="text-xs font-extrabold text-white">1kHz</div>
+                                <div class="text-[10px] text-slate-400">목소리·중음</div>
+                            </div>
+                        </div>
+
+                        <!-- Band 3: 4kHz -->
+                        <div class="flex flex-col items-center justify-between h-full py-0.5">
+                            <span id="eq-val-3" class="text-[11px] font-mono font-bold text-cyan-300">0 dB</span>
+                            <div class="eq-vert-wrapper" data-band="3">
+                                <div class="eq-vert-track">
+                                    <div id="eq-fill-3" class="eq-vert-fill" style="bottom: 50%; height: 0%;"></div>
+                                    <div id="eq-thumb-3" class="eq-vert-thumb" style="top: 50%;"></div>
+                                </div>
+                            </div>
+                            <div class="text-center leading-tight">
+                                <div class="text-xs font-extrabold text-white">4kHz</div>
+                                <div class="text-[10px] text-slate-400">또렷함·타격감</div>
+                            </div>
+                        </div>
+
+                        <!-- Band 4: 12kHz -->
+                        <div class="flex flex-col items-center justify-between h-full py-0.5">
+                            <span id="eq-val-4" class="text-[11px] font-mono font-bold text-cyan-300">0 dB</span>
+                            <div class="eq-vert-wrapper" data-band="4">
+                                <div class="eq-vert-track">
+                                    <div id="eq-fill-4" class="eq-vert-fill" style="bottom: 50%; height: 0%;"></div>
+                                    <div id="eq-thumb-4" class="eq-vert-thumb" style="top: 50%;"></div>
+                                </div>
+                            </div>
+                            <div class="text-center leading-tight">
+                                <div class="text-xs font-extrabold text-white">12kHz</div>
+                                <div class="text-[10px] text-slate-400">찰랑이는 고음</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 우측 실시간 시각화 컬럼 (7칸) ==================== -->
+        <section class="lg:col-span-7 flex flex-col gap-3 min-h-0">
+
+            <!-- 상단: 소리의 3요소 실시간 요약 카드 3개 -->
+            <div class="grid grid-cols-3 gap-2.5 shrink-0">
+                <!-- 1. 소리의 높낮이 (진동수) -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex items-center justify-between">
+                    <div>
+                        <span class="text-[11px] font-bold text-cyan-400 flex items-center gap-1">
+                            <i class="fa-solid fa-arrows-left-right"></i> 1. 소리의 높낮이 (진동수)
+                        </span>
+                        <div class="flex items-baseline gap-2 mt-1">
+                            <span id="metric-freq" class="text-lg sm:text-2xl font-extrabold font-mono text-white">262 Hz</span>
+                            <span id="metric-note" class="text-xs sm:text-sm font-bold px-2 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">도 (C4)</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">1초 동안 공기가 떨리는 횟수</p>
+                    </div>
+                </div>
+
+                <!-- 2. 소리의 크기 (진폭) -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-bold text-emerald-400 flex items-center gap-1">
+                                <i class="fa-solid fa-arrows-up-down"></i> 2. 소리의 크기 (진폭)
+                            </span>
+                            <span id="metric-db" class="text-xs font-mono font-bold text-emerald-300">-12 dB</span>
+                        </div>
+                        <div class="w-full h-3 bg-slate-950 rounded-full overflow-hidden border border-slate-800 mt-2">
+                            <div id="metric-vol-bar" class="h-full w-3/4 bg-gradient-to-r from-emerald-400 via-cyan-400 to-rose-500 transition-all duration-75"></div>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1">파형의 위아래 높이가 클수록 큰 소리</p>
+                </div>
+
+                <!-- 3. 소리의 맵시 (파형 & 배음) -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex flex-col justify-between">
+                    <div>
+                        <span class="text-[11px] font-bold text-violet-400 flex items-center gap-1">
+                            <i class="fa-solid fa-wand-sparkles"></i> 3. 소리의 맵시 (음색)
+                        </span>
+                        <div id="metric-timbre" class="text-sm sm:text-base font-extrabold text-white mt-1 truncate">
+                            맑고 순수한 사인파
+                        </div>
+                    </div>
+                    <p id="metric-harmonics" class="text-[11px] text-slate-400 mt-0.5 truncate">기둥 1개 (배음이 없는 순수음)</p>
+                </div>
+            </div>
+
+            <!-- 중단: 시간 영역 캔버스 (실제 공기의 진동 모양 - 오실로스코프) -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex-1 flex flex-col min-h-[195px] shadow-xl">
+                <div class="flex items-center justify-between mb-2 shrink-0">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow shadow-cyan-400"></span>
+                        <h3 class="text-xs sm:text-sm font-extrabold text-white">
+                            시간에 따른 실제 소리 파형 <span class="text-cyan-400 font-normal text-xs">(오실로스코프 · Time Domain)</span>
+                        </h3>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="hidden sm:inline text-[11px] text-slate-400">가로: 시간(Time) / 세로: 공기 압력(진폭)</span>
+                        <button onclick="window.toggleFreezeWaveform()" id="btn-freeze" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1">
+                            <i class="fa-solid fa-pause"></i>
+                            <span id="freeze-btn-text">파형 멈춰서 관찰하기</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="relative flex-1 min-h-[145px] bg-slate-950 rounded-xl border border-slate-800/90 overflow-hidden">
+                    <canvas id="waveform-canvas" class="w-full h-full block"></canvas>
+                </div>
+            </div>
+
+            <!-- 하단: 주파수 영역 캔버스 (푸리에 변환 FFT 스펙트럼) -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex-[1.25] flex flex-col min-h-[225px] shadow-xl">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2 shrink-0">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-violet-400 shadow shadow-violet-400"></span>
+                        <h3 class="text-xs sm:text-sm font-extrabold text-white">
+                            푸리에 변환(FFT) 주파수 성분 분석기 <span class="text-violet-400 font-normal text-xs">(어떤 높이의 소리들이 섞여 있을까?)</span>
+                        </h3>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <label class="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer select-none">
+                            <input type="checkbox" id="chk-show-eq-overlay" checked="" class="accent-violet-500 rounded cursor-pointer">
+                            <span>5-Band 그래픽 이퀄라이저 곡선 겹쳐 보기</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="relative flex-1 min-h-[165px] bg-slate-950 rounded-xl border border-slate-800/90 overflow-hidden">
+                    <canvas id="fft-canvas" class="w-full h-full block cursor-crosshair"></canvas>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script>
+        // 초기 깨끗한 HTML 스냅샷 보관 (HTML 저장 시 오염되지 않은 원본 제공)
+        const INITIAL_CLEAN_DOM = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+        let audioCtx = null;
+        let analyser = null;
+        let outputGain = null; // 스피커 출력 게인 (전체 볼륨 제어)
+        let eqFilters = [];
+
+        // 오디오 소스 노드
+        let oscNodes = [];
+        let noiseNode = null;
+
+        // 유튜브 탭 오디오 스트림
+        let tabStream = null;
+        let tabSource = null;
+
+        // 로컬 파일 오디오
+        let audioElement = null;
+        let fileMediaSource = null;
+
+        // 컨트롤 상태
+        let isAudioActive = false;
+        let currentSourceMode = 'synth'; // 'synth' | 'music'
+        let currentWaveform = 'sine';    // 'sine' | 'square' | 'sawtooth' | 'triangle' | 'noise'
+        let currentFreq = 261.63;
+        let currentNoteName = '도 (C4)';
+        let isChordMode = false;
+        let isFrozen = false;
+        let autoDemoTimer = null;
+        let simPhase = 0;
+
+        // 5-Band 그래픽 이퀄라이저 데이터
+        const EQ_BANDS = [
+            { freq: 60,    type: 'lowshelf',  label: '60Hz 초저음',   gain: 0 },
+            { freq: 250,   type: 'peaking',   label: '250Hz 중저음',  gain: 0 },
+            { freq: 1000,  type: 'peaking',   label: '1kHz 보컬/중음', gain: 0 },
+            { freq: 4000,  type: 'peaking',   label: '4kHz 선명도',   gain: 0 },
+            { freq: 12000, type: 'highshelf', label: '12kHz 고음',    gain: 0 }
+        ];
+
+        const EQ_PRESETS = {
+            flat:     { gains: [0, 0, 0, 0, 0],    desc: '🎵 기본(Flat): 모든 주파수를 원래 소리 그대로 평탄하게(0dB) 들려줍니다.' },
+            bass:     { gains: [12, 8, 0, -2, 2],  desc: '🔥 베이스 강조: 60Hz와 250Hz 저음을 크게 키워 심장이 울리는 웅장한 소리를 만듭니다!' },
+            vocal:    { gains: [-5, -2, 10, 7, 2], desc: '🎤 보컬 선명: 웅웅거리는 저음은 줄이고 사람 목소리 대역(1kHz~4kHz)을 또렷하게 키웠어요!' },
+            kpop:     { gains: [8, 3, -1, 7, 10],  desc: '✨ K-POP 프리셋: 단단한 저음 베이스와 화려하고 찰랑거리는 고음(12kHz)을 동시에 살렸어요!' },
+            rock:     { gains: [10, 4, -6, 6, 11], desc: '🎸 록 (V자형): 저음 드럼과 고음 일렉기타를 극대화해 이퀄라이저 곡선이 V자 모양이 되었습니다!' },
+            acoustic: { gains: [4, 6, 2, 4, 3],    desc: '☕ 어쿠스틱: 통기타와 피아노 소리가 따뜻하고 편안하게 들리도록 중저음을 감싸주었어요.' }
+        };
+
+        let fftHoverX = -1;
+        let fftHoverY = -1;
+
+        function getEQGainAtFreq(f) {
+            const logF = Math.log10(Math.max(20, f));
+            let totalDb = 0;
+            for (let i = 0; i < EQ_BANDS.length; i++) {
+                const bandLogF = Math.log10(EQ_BANDS[i].freq);
+                const dist = Math.abs(logF - bandLogF);
+                const weight = Math.exp(-(dist * dist) / 0.32);
+                totalDb += EQ_BANDS[i].gain * weight;
+            }
+            return Math.max(-18, Math.min(18, totalDb));
+        }
+
+        function initAudioEngine() {
+            try {
+                if (!audioCtx) {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    audioCtx = new AudioContextClass();
+
+                    analyser = audioCtx.createAnalyser();
+                    analyser.fftSize = 2048;
+                    analyser.smoothingTimeConstant = 0.78;
+
+                    outputGain = audioCtx.createGain();
+                    outputGain.gain.value = 0.75;
+
+                    eqFilters = EQ_BANDS.map((band) => {
+                        const filter = audioCtx.createBiquadFilter();
+                        filter.type = band.type;
+                        filter.frequency.value = band.freq;
+                        filter.Q.value = 1.1;
+                        filter.gain.value = band.gain;
+                        return filter;
+                    });
+
+                    for (let i = 0; i < eqFilters.length - 1; i++) {
+                        eqFilters[i].connect(eqFilters[i + 1]);
+                    }
+                    // eqFilters -> analyser -> outputGain -> destination
+                    eqFilters[eqFilters.length - 1].connect(analyser);
+                    analyser.connect(outputGain);
+                    outputGain.connect(audioCtx.destination);
+                }
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                syncSpeakerOutputGain();
+            } catch (e) {
+                console.warn('Web Audio API initialization note:', e);
+            }
+        }
+
+        function syncSpeakerOutputGain() {
+            if (!outputGain || !audioCtx) return;
+            const userVol = parseFloat(document.getElementById('vol-slider')?.value || 75) / 100;
+            outputGain.gain.setTargetAtTime(userVol, audioCtx.currentTime, 0.015);
+        }
+
+        function stopSynthNodes() {
+            oscNodes.forEach(node => {
+                try { node.stop(); } catch (e) {}
+                try { node.disconnect(); } catch (e) {}
+            });
+            oscNodes = [];
+
+            if (noiseNode) {
+                try { noiseNode.stop(); } catch (e) {}
+                try { noiseNode.disconnect(); } catch (e) {}
+                noiseNode = null;
+            }
+        }
+
+        function startSynthSound() {
+            initAudioEngine();
+            stopSynthNodes();
+
+            if (!isAudioActive || currentSourceMode !== 'synth' || !audioCtx || !eqFilters.length) return;
+
+            syncSpeakerOutputGain();
+
+            if (currentWaveform === 'noise') {
+                const bufferSize = audioCtx.sampleRate * 2;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                noiseNode = audioCtx.createBufferSource();
+                noiseNode.buffer = buffer;
+                noiseNode.loop = true;
+
+                const noiseGain = audioCtx.createGain();
+                noiseGain.gain.value = 0.32;
+                noiseNode.connect(noiseGain);
+                noiseGain.connect(eqFilters[0]);
+                noiseNode.start();
+                return;
+            }
+
+            const freqs = isChordMode ? [261.63, 329.63, 392.00] : [currentFreq];
+            freqs.forEach((f) => {
+                const osc = audioCtx.createOscillator();
+                const oscGain = audioCtx.createGain();
+                osc.type = currentWaveform;
+                osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+                oscGain.gain.value = isChordMode ? 0.22 : 0.42;
+
+                osc.connect(oscGain);
+                oscGain.connect(eqFilters[0]);
+                osc.start();
+                oscNodes.push(osc);
+            });
+        }
+
+        window.toggleSoundPower = function() {
+            initAudioEngine();
+            isAudioActive = !isAudioActive;
+
+            if (isAudioActive) {
+                if (currentSourceMode === 'synth') {
+                    startSynthSound();
+                } else if (currentSourceMode === 'music') {
+                    if (audioElement && audioElement.src && audioElement.paused) {
+                        audioElement.play().catch(() => {});
+                        updateFilePlayButtonUI(true);
+                    } else if (!tabStream) {
+                        updateCommentary('🎬 [유튜브 · 음악파일] 탭에서 유튜브 오디오 캡처를 연결하거나 내 컴퓨터 음악 파일을 선택해 주세요!', '음악 소스 안내');
+                    }
+                }
+                updateCommentary('🔊 실시간 오디오 출력이 켜졌습니다! 건반이나 5-Band 그래픽 이퀄라이저를 조작해 보세요.', '오디오 켜짐');
+            } else {
+                stopSynthNodes();
+                if (audioElement && !audioElement.paused) {
+                    audioElement.pause();
+                    updateFilePlayButtonUI(false);
+                }
+                updateCommentary('🔇 스피커 소리를 일시정지했습니다. (화면의 파형과 FFT 시뮬레이션은 계속 조작하며 관찰할 수 있습니다!)', '일시정지');
+            }
+            updatePowerStatusUI();
+        };
+
+        function updatePowerStatusUI() {
+            const btn = document.getElementById('master-Toggle-Btn');
+            const icon = document.getElementById('master-btn-icon');
+            const text = document.getElementById('master-btn-text');
+
+            const isFilePlaying = audioElement && !audioElement.paused;
+            const active = isAudioActive || (tabStream !== null) || isFilePlaying;
+
+            if (active) {
+                btn.className = 'px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm bg-rose-500 hover:bg-rose-400 text-white shadow-lg shadow-rose-500/25 transition flex items-center gap-2';
+                icon.className = 'fa-solid fa-stop';
+                text.textContent = '소리 끄기 (Space)';
+            } else {
+                btn.className = 'px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/25 transition flex items-center gap-2';
+                icon.className = 'fa-solid fa-volume-high';
+                text.textContent = '소리 켜기 (Space)';
+            }
+        }
+
+        window.selectPianoNote = function(freq, noteLabel, keyIdx) {
+            initAudioEngine();
+            isChordMode = false;
+            currentFreq = freq;
+            currentNoteName = noteLabel;
+
+            if (currentWaveform === 'noise') {
+                window.selectWaveform('sine');
+            }
+
+            document.querySelectorAll('.piano-key').forEach((btn, idx) => {
+                btn.classList.toggle('active-key', idx === keyIdx);
+            });
+            document.getElementById('btn-chord-mode').classList.remove('ring-2', 'ring-violet-400');
+
+            document.getElementById('freq-slider').value = Math.round(freq);
+            document.getElementById('freq-slider-label').textContent = `${Math.round(freq)} Hz`;
+
+            isAudioActive = true;
+            startSynthSound();
+            updatePowerStatusUI();
+            updateMetricsStatic();
+
+            updateCommentary(
+                `🎹 '${noteLabel}' 건반(${Math.round(freq)}Hz)을 눌렀어요! 1초에 공기가 ${Math.round(freq)}번 떨리며, 음이 높을수록 파형이 더 촘촘해집니다.`,
+                '소리의 높낮이'
+            );
+        };
+
+        window.playChordDemo = function() {
+            initAudioEngine();
+            isChordMode = !isChordMode;
+            const chordBtn = document.getElementById('btn-chord-mode');
+
+            if (isChordMode) {
+                if (currentWaveform === 'noise') currentWaveform = 'sine';
+                chordBtn.classList.add('ring-2', 'ring-violet-400');
+                isAudioActive = true;
+                startSynthSound();
+                updatePowerStatusUI();
+                updateCommentary(
+                    '🎶 [도(262Hz) + 미(330Hz) + 솔(392Hz)] 3개의 음을 동시에 울렸어요! 위쪽 파형은 복잡하게 섞였지만, 아래쪽 푸리에 변환(FFT)은 3개의 기둥으로 정확히 분리해 냅니다!',
+                    '푸리에 변환의 마법'
+                );
+            } else {
+                chordBtn.classList.remove('ring-2', 'ring-violet-400');
+                startSynthSound();
+                updateCommentary('단일 음 모드로 돌아왔습니다.', '단일 음');
+            }
+        };
+
+        window.selectWaveform = function(type) {
+            initAudioEngine();
+            currentWaveform = type;
+
+            const waveTypes = ['sine', 'square', 'sawtooth', 'triangle', 'noise'];
+            waveTypes.forEach(t => {
+                const btn = document.getElementById(`wave-btn-${t}`);
+                if (t === type) {
+                    btn.className = 'wave-btn py-2 px-1.5 rounded-xl border text-xs font-bold transition flex flex-col items-center gap-1 bg-cyan-500/20 border-cyan-400 text-cyan-200 shadow';
+                } else {
+                    btn.className = 'wave-btn py-2 px-1.5 rounded-xl border border-slate-700 bg-slate-800/80 text-slate-300 hover:bg-slate-800 text-xs font-bold transition flex flex-col items-center gap-1';
+                }
+            });
+
+            const descriptions = {
+                sine: {
+                    badge: '기본 진동 1개만 있는 가장 순수한 소리',
+                    timbre: '맑고 순수한 사인파',
+                    harm: '기둥 1개 (배음이 없는 순수음)',
+                    msg: '〰️ [사인파]는 배음이 전혀 없어 아래 FFT 그래프에 기둥이 딱 1개만 솟아오릅니다!'
+                },
+                square: {
+                    badge: '홀수 배음(1, 3, 5배...)이 더해져 통통 튀는 8비트 게임 소리',
+                    timbre: '8비트 게임기 네모파',
+                    harm: '홀수 배음 기둥들 (1f, 3f, 5f...)',
+                    msg: '⊓⊔ [네모파]는 기본음 뒤에 3배, 5배, 7배 주파수 기둥(홀수 배음)들이 줄지어 나타나 레트로 게임기 소리가 납니다!'
+                },
+                sawtooth: {
+                    badge: '모든 정수 배음(1, 2, 3, 4배...)이 꽉 찬 강렬한 신스 소리',
+                    timbre: '일렉트릭 신스 톱니파',
+                    harm: '모든 정수 배음 기둥 (1f, 2f, 3f...)',
+                    msg: '/|/| [톱니파]는 1배, 2배, 3배, 4배... 모든 배음 기둥이 촘촘히 나타나 현악기나 일렉 신스처럼 풍성한 소리가 납니다!'
+                },
+                triangle: {
+                    badge: '높은 배음이 아주 작게만 섞인 부드러운 오르골·플루트 소리',
+                    timbre: '부드러운 오르골 삼각파',
+                    harm: '약한 홀수 배음 (부드러운 음색)',
+                    msg: '/\\△ [삼각파]는 네모파처럼 홀수 배음이 있지만 크기가 급격히 작아져서 오르골처럼 곱고 부드럽게 들립니다.'
+                },
+                noise: {
+                    badge: '저음부터 고음까지 모든 주파수가 골고루 섞인 빗소리·폭포 소리',
+                    timbre: '빗소리·TV 백색소음',
+                    harm: '전 대역 주파수 고르게 분포',
+                    msg: '🌧️ [백색소음]은 모든 주파수가 골고루 들어있어요! 지금 왼쪽 아래 [5-Band 그래픽 이퀄라이저]를 움직이면 곡선 모양 그대로 기둥이 깎입니다!'
+                }
+            };
+
+            const info = descriptions[type];
+            document.getElementById('wave-desc-badge').textContent = info.badge;
+            document.getElementById('metric-timbre').textContent = info.timbre;
+            document.getElementById('metric-harmonics').textContent = info.harm;
+
+            isAudioActive = true;
+            startSynthSound();
+            updatePowerStatusUI();
+            updateCommentary(info.msg, '소리의 맵시(음색)');
+        };
+
+        window.startHarmonicAutoDemo = function() {
+            if (autoDemoTimer) {
+                clearInterval(autoDemoTimer);
+                autoDemoTimer = null;
+                document.getElementById('btn-auto-demo').textContent = '✨ 배음 자동 시연';
+                return;
+            }
+            const seq = ['sine', 'triangle', 'square', 'sawtooth'];
+            let step = 0;
+            window.selectPianoNote(440, '라 (A4)', 5);
+            window.selectWaveform(seq[0]);
+            document.getElementById('btn-auto-demo').textContent = '⏹️ 시연 멈추기';
+
+            autoDemoTimer = setInterval(() => {
+                step = (step + 1) % seq.length;
+                window.selectWaveform(seq[step]);
+            }, 2500);
+        };
+
+        window.onFreqSliderInput = function(val) {
+            const num = parseFloat(val);
+            currentFreq = num;
+            isChordMode = false;
+            currentNoteName = freqToNearestNote(num);
+            document.getElementById('freq-slider-label').textContent = `${Math.round(num)} Hz`;
+
+            if (currentWaveform === 'noise') {
+                window.selectWaveform('sine');
+            }
+
+            if (!isAudioActive) {
+                isAudioActive = true;
+                startSynthSound();
+                updatePowerStatusUI();
+            } else if (oscNodes.length > 0 && audioCtx) {
+                oscNodes[0].frequency.setValueAtTime(num, audioCtx.currentTime);
+            }
+            updateMetricsStatic();
+        };
+
+        window.onVolumeChange = function(val) {
+            const num = parseFloat(val);
+            document.getElementById('vol-slider-label').textContent = `${Math.round(num)}%`;
+            syncSpeakerOutputGain();
+        };
+
+        function updateMetricsStatic() {
+            document.getElementById('metric-freq').textContent = `${Math.round(currentFreq)} Hz`;
+            document.getElementById('metric-note').textContent = currentNoteName;
+        }
+
+        window.switchInputSource = function(mode) {
+            initAudioEngine();
+            currentSourceMode = mode;
+
+            if (autoDemoTimer) {
+                clearInterval(autoDemoTimer);
+                autoDemoTimer = null;
+                const demoBtn = document.getElementById('btn-auto-demo');
+                if (demoBtn) demoBtn.textContent = '✨ 배음 자동 시연';
+            }
+
+            stopSynthNodes();
+
+            if (mode !== 'music' && audioElement && !audioElement.paused) {
+                audioElement.pause();
+                updateFilePlayButtonUI(false);
+            }
+
+            syncSpeakerOutputGain();
+
+            const tabs = ['synth', 'music'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                const panel = document.getElementById(`panel-${t}`);
+                if (t === mode) {
+                    btn.className = 'py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 bg-cyan-500 text-slate-950 shadow';
+                    panel.classList.remove('hidden');
+                    panel.classList.add('flex');
+                } else {
+                    btn.className = 'py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 text-slate-300 hover:text-white';
+                    panel.classList.add('hidden');
+                    panel.classList.remove('flex');
+                }
+            });
+
+            if (mode === 'synth') {
+                if (isAudioActive) startSynthSound();
+                updateCommentary('🎹 [피아노 & 파형] 모드입니다. 건반이나 파형 버튼을 눌러 소리와 배음 기둥을 확인해 보세요!', '피아노 & 파형');
+            } else if (mode === 'music') {
+                document.getElementById('metric-timbre').textContent = tabStream ? '🔴 유튜브 실시간 (EQ 적용됨)' : '유튜브 · 오디오 파일';
+                document.getElementById('metric-harmonics').textContent = '전 대역 음악 주파수 실시간 분석 & 5-Band EQ';
+                updateCommentary('🎬 [1. 새 탭에서 유튜브 열기] 후 [2. 유튜브 탭 오디오 캡처 연결]을 누르거나, 내 컴퓨터 MP3/WAV 파일을 넣어보세요!', '유튜브 · 음악파일');
+            }
+            updatePowerStatusUI();
+        };
+
+        function extractYouTubeId(input) {
+            if (!input) return null;
+            const trimmed = input.trim();
+            if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+            const regex = /(?:youtube\.com\/(?:watch\?.*v=|embed\/|shorts\/|v\/|live\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+            const match = trimmed.match(regex);
+            return match ? match[1] : null;
+        }
+
+        window.openYouTubeInNewTab = function() {
+            const rawInput = (document.getElementById('yt-url-input')?.value || '').trim();
+            const videoId = extractYouTubeId(rawInput);
+            let targetUrl = 'https://www.youtube.com';
+
+            if (videoId) {
+                targetUrl = `https://www.youtube.com/watch?v=${videoId}`;
+            } else if (rawInput.startsWith('http://') || rawInput.startsWith('https://')) {
+                targetUrl = rawInput;
+            } else if (rawInput.length > 0) {
+                targetUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(rawInput)}`;
+            }
+
+            window.open(targetUrl, '_blank', 'noopener');
+            updateCommentary(
+                '🚀 새 탭에서 유튜브를 열었습니다! 노래를 재생한 뒤 이 화면으로 돌아와 [2. 유튜브 탭 오디오 캡처 연결] 버튼을 눌러주세요!',
+                '1단계 완료'
+            );
+        };
+
+        window.loadYouTubeFromInput = function() {
+            const rawInput = (document.getElementById('yt-url-input')?.value || '').trim();
+            // 기본값: 임베드 허용된 NCS(NoCopyrightSounds) 공식 EDM 트랙
+            const videoId = extractYouTubeId(rawInput) || 'K4DyBUG242c';
+            const wrapper = document.getElementById('yt-player-wrapper');
+            const iframe = document.getElementById('yt-iframe');
+
+            wrapper.classList.remove('hidden');
+            const originParam = (window.location.protocol.startsWith('http'))
+                ? `&origin=${encodeURIComponent(window.location.origin)}`
+                : '';
+            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0${originParam}`;
+
+            updateCommentary(
+                '📺 인앱 유튜브 영상을 열었습니다! 소리 파형과 5-Band EQ를 연동하려면 바로 위 [2. 유튜브 탭 오디오 캡처 연결] 버튼을 눌러주세요. (만약 업로더가 외부 재생을 막은 뮤직비디오라면 [1. 새 탭에서 유튜브 열기]를 사용하세요!)',
+                '인앱 플레이어'
+            );
+        };
+
+        window.closeYouTubeEmbed = function() {
+            const wrapper = document.getElementById('yt-player-wrapper');
+            const iframe = document.getElementById('yt-iframe');
+            if (iframe) iframe.src = '';
+            if (wrapper) wrapper.classList.add('hidden');
+        };
+
+        function disconnectYouTubeTabAudio() {
+            if (tabStream) {
+                tabStream.getTracks().forEach(t => t.stop());
+                tabStream = null;
+            }
+            if (tabSource) {
+                try { tabSource.disconnect(); } catch (e) {}
+                tabSource = null;
+            }
+            const btnText = document.getElementById('tab-audio-btn-text');
+            const btn = document.getElementById('btn-tab-audio');
+            const badge = document.getElementById('yt-capture-badge');
+            if (btnText) btnText.textContent = '2. 유튜브 탭 오디오 캡처 연결 (5-Band EQ & FFT 작동)';
+            if (btn) btn.className = 'w-full py-2 px-3 rounded-xl font-bold text-xs bg-rose-500 hover:bg-rose-400 text-white shadow-lg shadow-rose-500/20 transition flex items-center justify-center gap-2';
+            if (badge) {
+                badge.textContent = '연결 대기 중';
+                badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-semibold';
+            }
+            isAudioActive = false;
+            updatePowerStatusUI();
+        }
+
+        window.connectYouTubeTabAudio = async function() {
+            initAudioEngine();
+            if (tabStream) {
+                disconnectYouTubeTabAudio();
+                updateCommentary('⏹️ 유튜브 탭 오디오 캡처 연결을 해제했습니다.', '연결 해제');
+                return;
+            }
+
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+                    throw new Error('DisplayMedia Not Supported');
+                }
+
+                // 원본 유튜브 탭의 자체 소리는 자동으로 끄고(suppressLocalAudioPlayback: true),
+                // 오직 우리 웹앱의 5-Band 그래픽 이퀄라이저를 통과한 소리만 출력되도록 설정
+                const stream = await navigator.mediaDevices.getDisplayMedia({
+                    video: true,
+                    audio: {
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false,
+                        suppressLocalAudioPlayback: true
+                    },
+                    suppressLocalAudioPlayback: true
+                });
+
+                const audioTracks = stream.getAudioTracks();
+                if (audioTracks.length === 0) {
+                    stream.getTracks().forEach(t => t.stop());
+                    updateCommentary(
+                        '⚠️ 오디오 트랙이 감지되지 않았습니다! 공유할 유튜브 탭을 선택할 때 팝업창 왼쪽 아래 [탭 오디오도 공유] 스위치를 꼭 켜주세요!',
+                        '탭 오디오 체크 필요'
+                    );
+                    return;
+                }
+
+                stopSynthNodes();
+                if (audioElement && !audioElement.paused) {
+                    audioElement.pause();
+                    updateFilePlayButtonUI(false);
+                }
+
+                tabStream = stream;
+                tabSource = audioCtx.createMediaStreamSource(stream);
+                // 유튜브 오디오 스트림 -> 5-Band EQ 필터 체인 -> FFT 분석기 -> 스피커 출력
+                tabSource.connect(eqFilters[0]);
+                syncSpeakerOutputGain();
+
+                // 브라우저 상단 '공유 중지' 버튼 클릭 시 UI 상태 자동 동기화
+                audioTracks[0].addEventListener('ended', () => {
+                    disconnectYouTubeTabAudio();
+                    updateCommentary('유튜브 탭 오디오 공유가 종료되었습니다.', '공유 종료');
+                });
+
+                document.getElementById('iframe-permission-alert')?.classList.add('hidden');
+                document.getElementById('tab-audio-btn-text').textContent = '🔴 유튜브 5-Band EQ 실시간 적용 중 (클릭 시 연결 해제)';
+                document.getElementById('btn-tab-audio').className = 'w-full py-2 px-3 rounded-xl font-bold text-xs bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition flex items-center justify-center gap-2';
+
+                const badge = document.getElementById('yt-capture-badge');
+                if (badge) {
+                    badge.textContent = '🔴 5-Band EQ 사운드 적용 중';
+                    badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold animate-pulse';
+                }
+
+                document.getElementById('metric-timbre').textContent = '🔴 유튜브 실시간 (EQ 적용됨)';
+                document.getElementById('metric-harmonics').textContent = '유튜브 오디오 -> 5-Band EQ 필터 -> 실시간 FFT 분석';
+
+                isAudioActive = true;
+                updatePowerStatusUI();
+                updateCommentary(
+                    '🎉 유튜브 오디오가 연결되었습니다! 원본 유튜브 탭 소리는 자동 차단되고 지금 들리는 소리는 100% [5-Band 그래픽 이퀄라이저]가 적용된 소리입니다!',
+                    '유튜브 EQ 연동 성공'
+                );
+            } catch (err) {
+                const isInIframe = (window.self !== window.top);
+                if (isInIframe || err.name === 'SecurityError' || (err.message && err.message.toLowerCase().includes('permission'))) {
+                    document.getElementById('iframe-permission-alert')?.classList.remove('hidden');
+                    updateCommentary(
+                        '💡 우측 미리보기(iframe) 창에서는 브라우저 보안 정책상 탭 오디오 캡처 팝업이 차단됩니다! 상단 [HTML 저장]으로 파일을 내려받아 열면 유튜브 캡처가 100% 작동합니다.',
+                        'HTML 저장 안내'
+                    );
+                } else {
+                    updateCommentary(
+                        'ℹ️ 유튜브 탭 선택이 취소되었습니다. 다시 연결하려면 [2. 유튜브 탭 오디오 캡처 연결] 버튼을 누르고 [탭 오디오도 공유]를 켜주세요!',
+                        '취소됨'
+                    );
+                }
+            }
+        };
+
+        function formatTimeMMSS(sec) {
+            if (!sec || !isFinite(sec) || sec < 0) return '00:00';
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function updateFilePlayButtonUI(playing) {
+            const playBtn = document.getElementById('btn-file-play');
+            if (!playBtn) return;
+            playBtn.innerHTML = playing ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-play"></i>';
+        }
+
+        window.handleAudioFileUpload = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            initAudioEngine();
+            stopSynthNodes();
+            if (tabStream) disconnectYouTubeTabAudio();
+
+            if (!audioElement) {
+                audioElement = new Audio();
+                fileMediaSource = audioCtx.createMediaElementSource(audioElement);
+                fileMediaSource.connect(eqFilters[0]);
+
+                audioElement.addEventListener('timeupdate', () => {
+                    const seek = document.getElementById('file-seek-slider');
+                    const curLabel = document.getElementById('file-time-current');
+                    const totLabel = document.getElementById('file-time-total');
+                    if (audioElement.duration && isFinite(audioElement.duration)) {
+                        if (seek) seek.value = ((audioElement.currentTime / audioElement.duration) * 100).toFixed(1);
+                        if (curLabel) curLabel.textContent = formatTimeMMSS(audioElement.currentTime);
+                        if (totLabel) totLabel.textContent = formatTimeMMSS(audioElement.duration);
+                    }
+                });
+
+                audioElement.addEventListener('ended', () => {
+                    isAudioActive = false;
+                    updateFilePlayButtonUI(false);
+                    updatePowerStatusUI();
+                });
+            }
+
+            const url = URL.createObjectURL(file);
+            audioElement.src = url;
+            syncSpeakerOutputGain();
+            audioElement.play().then(() => {
+                isAudioActive = true;
+                updateFilePlayButtonUI(true);
+                updatePowerStatusUI();
+            }).catch(() => {});
+
+            document.getElementById('file-name-label').textContent = `🎵 재생 중: ${file.name}`;
+            document.getElementById('btn-file-play').disabled = false;
+            document.getElementById('file-seek-slider').disabled = false;
+            document.getElementById('metric-timbre').textContent = file.name;
+            document.getElementById('metric-harmonics').textContent = '오디오 파일 전 대역 실시간 FFT & 5-Band EQ';
+
+            updateCommentary(`📂 '${file.name}' 음악 파일을 재생합니다! 아래 5-Band 그래픽 이퀄라이저로 음색을 자유롭게 조절해 보세요.`, '오디오 파일 재생');
+        };
+
+        window.toggleUploadedFilePlay = function() {
+            if (!audioElement || !audioElement.src) return;
+            initAudioEngine();
+            syncSpeakerOutputGain();
+            if (audioElement.paused) {
+                if (tabStream) disconnectYouTubeTabAudio();
+                audioElement.play();
+                isAudioActive = true;
+                updateFilePlayButtonUI(true);
+            } else {
+                audioElement.pause();
+                isAudioActive = false;
+                updateFilePlayButtonUI(false);
+            }
+            updatePowerStatusUI();
+        };
+
+        window.onFileSeekInput = function(percent) {
+            if (!audioElement || !audioElement.duration || !isFinite(audioElement.duration)) return;
+            audioElement.currentTime = (parseFloat(percent) / 100) * audioElement.duration;
+        };
+
+        function setEQBandGain(bandIdx, dbValue, skipPresetClear = false) {
+            const clamped = Math.max(-15, Math.min(15, Math.round(dbValue)));
+            EQ_BANDS[bandIdx].gain = clamped;
+
+            if (eqFilters[bandIdx] && audioCtx) {
+                eqFilters[bandIdx].gain.setTargetAtTime(clamped, audioCtx.currentTime, 0.015);
+            }
+
+            const valLabel = document.getElementById(`eq-val-${bandIdx}`);
+            const thumb = document.getElementById(`eq-thumb-${bandIdx}`);
+            const fill = document.getElementById(`eq-fill-${bandIdx}`);
+
+            valLabel.textContent = `${clamped > 0 ? '+' : ''}${clamped} dB`;
+            valLabel.className = `text-[11px] font-mono font-bold ${clamped > 0 ? 'text-emerald-300' : clamped < 0 ? 'text-rose-300' : 'text-cyan-300'}`;
+
+            const percentFromTop = ((15 - clamped) / 30) * 100;
+            thumb.style.top = `${percentFromTop}%`;
+
+            if (clamped >= 0) {
+                const h = (clamped / 30) * 100;
+                fill.style.bottom = '50%';
+                fill.style.height = `${h}%`;
+            } else {
+                const h = (Math.abs(clamped) / 30) * 100;
+                fill.style.bottom = `${50 - h}%`;
+                fill.style.height = `${h}%`;
+            }
+
+            if (!skipPresetClear) {
+                document.querySelectorAll('.eq-preset-btn').forEach(b => {
+                    b.className = 'eq-preset-btn py-1.5 px-2 rounded-lg text-[11px] font-bold border border-slate-700 bg-slate-800/90 text-slate-300 hover:bg-slate-800 transition';
+                });
+            }
+
+            drawEQCurveCanvas();
+        }
+
+        window.applyEQPreset = function(presetKey) {
+            initAudioEngine();
+            const preset = EQ_PRESETS[presetKey];
+            if (!preset) return;
+
+            preset.gains.forEach((g, idx) => {
+                setEQBandGain(idx, g, true);
+            });
+
+            if (!isAudioActive && currentSourceMode === 'synth') {
+                isAudioActive = true;
+                startSynthSound();
+                updatePowerStatusUI();
+            }
+
+            document.querySelectorAll('.eq-preset-btn').forEach(b => {
+                b.className = 'eq-preset-btn py-1.5 px-2 rounded-lg text-[11px] font-bold border border-slate-700 bg-slate-800/90 text-slate-300 hover:bg-slate-800 transition';
+            });
+            const activeBtn = document.getElementById(`preset-${presetKey}`);
+            if (activeBtn) {
+                activeBtn.className = 'eq-preset-btn py-1.5 px-2 rounded-lg text-[11px] font-bold border bg-violet-500/25 border-violet-400 text-white transition shadow';
+            }
+
+            updateCommentary(preset.desc, '5-Band 그래픽 이퀄라이저');
+        };
+
+        window.startWhiteNoiseEQTest = function() {
+            window.switchInputSource('synth');
+            window.selectWaveform('noise');
+            if (EQ_BANDS.every(b => b.gain === 0)) {
+                window.applyEQPreset('rock');
+            }
+            updateCommentary(
+                '🌧️ 모든 주파수가 가득 찬 [백색소음]을 켰어요! 오른쪽 아래 FFT 그래프의 보라색 곡선(5-Band 그래픽 이퀄라이저) 모양을 따라 주파수 기둥들이 그대로 솟아오르고 깎이는 걸 확인해 보세요!',
+                'EQ 곡선 시각화'
+            );
+        };
+
+        function setupVerticalEQSliders() {
+            const wrappers = document.querySelectorAll('.eq-vert-wrapper');
+            wrappers.forEach(wrapper => {
+                const bandIdx = parseInt(wrapper.getAttribute('data-band'), 10);
+                const track = wrapper.querySelector('.eq-vert-track');
+
+                const updateFromClientY = (clientY) => {
+                    const rect = track.getBoundingClientRect();
+                    const relY = Math.max(0, Math.min(rect.height, clientY - rect.top));
+                    const ratio = 1 - (relY / rect.height);
+                    const db = -15 + ratio * 30;
+                    setEQBandGain(bandIdx, db);
+
+                    if (!isAudioActive && currentSourceMode === 'synth') {
+                        isAudioActive = true;
+                        startSynthSound();
+                        updatePowerStatusUI();
+                    }
+
+                    const b = EQ_BANDS[bandIdx];
+                    updateCommentary(
+                        `🎚️ [5-Band 그래픽 이퀄라이저] ${b.label} 대역을 ${b.gain > 0 ? '+' : ''}${b.gain}dB로 조절했습니다!`,
+                        '이퀄라이저 조작'
+                    );
+                };
+
+                wrapper.addEventListener('pointerdown', (e) => {
+                    initAudioEngine();
+                    wrapper.setPointerCapture(e.pointerId);
+                    wrapper.classList.add('dragging');
+                    updateFromClientY(e.clientY);
+                });
+
+                wrapper.addEventListener('pointermove', (e) => {
+                    if (!wrapper.classList.contains('dragging')) return;
+                    updateFromClientY(e.clientY);
+                });
+
+                const endDrag = () => wrapper.classList.remove('dragging');
+                wrapper.addEventListener('pointerup', endDrag);
+                wrapper.addEventListener('pointercancel', endDrag);
+                wrapper.addEventListener('dblclick', () => setEQBandGain(bandIdx, 0));
+            });
+        }
+
+        function drawEQCurveCanvas() {
+            const canvas = document.getElementById('eq-curve-canvas');
+            if (!canvas) return;
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return;
+
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = Math.floor(rect.width * dpr);
+            canvas.height = Math.floor(rect.height * dpr);
+            const ctx = canvas.getContext('2d');
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            ctx.clearRect(0, 0, rect.width, rect.height);
+
+            const points = [];
+            for (let i = 0; i < 5; i++) {
+                const thumb = document.getElementById(`eq-thumb-${i}`);
+                if (thumb) {
+                    const tRect = thumb.getBoundingClientRect();
+                    const x = (tRect.left + tRect.width / 2) - rect.left;
+                    const y = (tRect.top + tRect.height / 2) - rect.top;
+                    points.push({ x, y });
+                }
+            }
+            if (points.length < 5) return;
+
+            const gradFill = ctx.createLinearGradient(0, 0, 0, rect.height);
+            gradFill.addColorStop(0, 'rgba(167, 139, 250, 0.32)');
+            gradFill.addColorStop(0.5, 'rgba(34, 211, 238, 0.14)');
+            gradFill.addColorStop(1, 'rgba(15, 23, 42, 0.0)');
+
+            ctx.beginPath();
+            ctx.moveTo(0, rect.height / 2);
+            ctx.lineTo(points[0].x, points[0].y);
+            for (let i = 0; i < points.length - 1; i++) {
+                const xc = (points[i].x + points[i + 1].x) / 2;
+                const yc = (points[i].y + points[i + 1].y) / 2;
+                ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+            }
+            ctx.lineTo(points[4].x, points[4].y);
+            ctx.lineTo(rect.width, rect.height / 2);
+            ctx.lineTo(rect.width, rect.height);
+            ctx.lineTo(0, rect.height);
+            ctx.closePath();
+            ctx.fillStyle = gradFill;
+            ctx.fill();
+
+            const lineGrad = ctx.createLinearGradient(0, 0, rect.width, 0);
+            lineGrad.addColorStop(0, '#22d3ee');
+            lineGrad.addColorStop(0.5, '#34d399');
+            lineGrad.addColorStop(1, '#a78bfa');
+
+            ctx.beginPath();
+            ctx.moveTo(0, rect.height / 2);
+            ctx.lineTo(points[0].x, points[0].y);
+            for (let i = 0; i < points.length - 1; i++) {
+                const xc = (points[i].x + points[i + 1].x) / 2;
+                const yc = (points[i].y + points[i + 1].y) / 2;
+                ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+            }
+            ctx.lineTo(points[4].x, points[4].y);
+            ctx.lineTo(rect.width, rect.height / 2);
+
+            ctx.strokeStyle = lineGrad;
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+        }
+
+        function fillTopRoundedBar(ctx, x, y, w, h, r) {
+            if (h <= 0 || w <= 0) return;
+            const radius = Math.min(r, w / 2, h / 2);
+            ctx.beginPath();
+            ctx.moveTo(x, y + h);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.lineTo(x + w - radius, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+            ctx.lineTo(x + w, y + h);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function renderLoop() {
+            requestAnimationFrame(renderLoop);
+            simPhase += 0.06;
+            drawWaveformCanvas();
+            drawFFTSpectrumCanvas();
+        }
+
+        function drawWaveformCanvas() {
+            if (isFrozen) return;
+            const canvas = document.getElementById('waveform-canvas');
+            if (!canvas) return;
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return;
+
+            const dpr = window.devicePixelRatio || 1;
+            if (canvas.width !== Math.floor(rect.width * dpr) || canvas.height !== Math.floor(rect.height * dpr)) {
+                canvas.width = Math.floor(rect.width * dpr);
+                canvas.height = Math.floor(rect.height * dpr);
+            }
+
+            const ctx = canvas.getContext('2d');
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            const W = rect.width;
+            const H = rect.height;
+
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(0, 0, W, H);
+
+            ctx.strokeStyle = 'rgba(51, 65, 85, 0.35)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < W; x += W / 8) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+            }
+            for (let y = 0; y < H; y += H / 4) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+            }
+
+            const waveGrad = ctx.createLinearGradient(0, 0, W, 0);
+            waveGrad.addColorStop(0, '#22d3ee');
+            waveGrad.addColorStop(0.5, '#34d399');
+            waveGrad.addColorStop(1, '#a78bfa');
+
+            const isFilePlaying = audioElement && !audioElement.paused;
+            const hasRealAudioStream = Boolean(analyser && (isAudioActive || tabStream || isFilePlaying));
+
+            let useAnalyserWave = false;
+            let timeData = null;
+
+            if (hasRealAudioStream) {
+                const bufferLen = analyser.fftSize;
+                timeData = new Uint8Array(bufferLen);
+                analyser.getByteTimeDomainData(timeData);
+
+                let sumSq = 0;
+                for (let i = 0; i < bufferLen; i++) {
+                    const norm = (timeData[i] - 128) / 128;
+                    sumSq += norm * norm;
+                }
+                const rms = Math.sqrt(sumSq / bufferLen);
+
+                // 유튜브/오디오파일 모드이거나 실제 신호가 존재할 때 실제 Analyser 파형 사용
+                if (currentSourceMode === 'music' || tabStream || isFilePlaying || rms > 0.001) {
+                    useAnalyserWave = true;
+                    const db = rms > 0.0001 ? Math.max(-60, Math.round(20 * Math.log10(rms))) : -60;
+                    const barPercent = Math.min(100, Math.max(4, ((db + 60) / 60) * 100));
+                    document.getElementById('metric-db').textContent = `${db} dB`;
+                    document.getElementById('metric-vol-bar').style.width = `${barPercent}%`;
+                }
+            }
+
+            ctx.beginPath();
+            if (useAnalyserWave && timeData) {
+                let triggerIdx = 0;
+                for (let i = 1; i < timeData.length / 2; i++) {
+                    if (timeData[i - 1] < 128 && timeData[i] >= 128) {
+                        triggerIdx = i;
+                        break;
+                    }
+                }
+                const samplesToDraw = Math.min(700, timeData.length - triggerIdx);
+                const sliceWidth = W / samplesToDraw;
+                for (let i = 0; i < samplesToDraw; i++) {
+                    const v = (timeData[triggerIdx + i] - 128) / 128;
+                    const y = (H / 2) - v * (H * 0.44);
+                    const x = i * sliceWidth;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+            } else if (currentSourceMode === 'music' && !tabStream && !isFilePlaying) {
+                // 음악 탭에서 아직 소스가 연결되지 않은 경우 평탄한 중심 대기선 표시
+                ctx.moveTo(0, H / 2);
+                ctx.lineTo(W, H / 2);
+            } else {
+                const volRatio = parseFloat(document.getElementById('vol-slider').value || 75) / 100;
+                const eqBoost = Math.pow(10, getEQGainAtFreq(currentFreq) / 40);
+                const amp = Math.min(0.44, 0.28 * volRatio * eqBoost);
+                const cycles = Math.max(1.5, (currentFreq / 110));
+
+                for (let x = 0; x <= W; x += 2) {
+                    const t = (x / W) * Math.PI * 2 * cycles + simPhase;
+                    let yVal = 0;
+                    if (currentWaveform === 'noise') {
+                        yVal = (Math.random() * 2 - 1) * 0.85;
+                    } else if (isChordMode) {
+                        yVal = (Math.sin(t) + Math.sin(t * 1.26) + Math.sin(t * 1.5)) / 2.6;
+                    } else if (currentWaveform === 'sine') {
+                        yVal = Math.sin(t);
+                    } else if (currentWaveform === 'square') {
+                        yVal = Math.sin(t) >= 0 ? 0.85 : -0.85;
+                    } else if (currentWaveform === 'sawtooth') {
+                        yVal = 2 * ((t / (2 * Math.PI)) - Math.floor(0.5 + t / (2 * Math.PI)));
+                    } else if (currentWaveform === 'triangle') {
+                        yVal = (2 / Math.PI) * Math.asin(Math.sin(t));
+                    }
+                    const y = (H / 2) - yVal * (H * amp);
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+            }
+
+            ctx.strokeStyle = waveGrad;
+            ctx.lineWidth = 2.8;
+            ctx.shadowColor = 'rgba(34, 211, 238, 0.7)';
+            ctx.shadowBlur = 8;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
+        function drawFFTSpectrumCanvas() {
+            const canvas = document.getElementById('fft-canvas');
+            if (!canvas) return;
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return;
+
+            const dpr = window.devicePixelRatio || 1;
+            if (canvas.width !== Math.floor(rect.width * dpr) || canvas.height !== Math.floor(rect.height * dpr)) {
+                canvas.width = Math.floor(rect.width * dpr);
+                canvas.height = Math.floor(rect.height * dpr);
+            }
+
+            const ctx = canvas.getContext('2d');
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            const W = rect.width;
+            const H = rect.height;
+            const padBottom = 24;
+            const plotH = H - padBottom;
+
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(0, 0, W, H);
+
+            ctx.strokeStyle = 'rgba(51, 65, 85, 0.35)';
+            ctx.lineWidth = 1;
+            for (let y = 0; y <= plotH; y += plotH / 4) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+            }
+
+            const minLog = Math.log10(20);
+            const maxLog = Math.log10(16000);
+            const freqToX = (f) => ((Math.log10(Math.max(20, f)) - minLog) / (maxLog - minLog)) * W;
+            const xToFreq = (x) => Math.pow(10, minLog + (x / W) * (maxLog - minLog));
+
+            const markers = [
+                { f: 60, label: '60Hz(초저음)' },
+                { f: 250, label: '250Hz(중저음)' },
+                { f: 523, label: '523Hz(높은도)' },
+                { f: 1000, label: '1kHz(중음)' },
+                { f: 4000, label: '4kHz(선명도)' },
+                { f: 12000, label: '12kHz(고음)' }
+            ];
+
+            ctx.font = '600 10px Pretendard, sans-serif';
+            ctx.textAlign = 'center';
+            markers.forEach(m => {
+                const x = freqToX(m.f);
+                ctx.strokeStyle = 'rgba(71, 85, 105, 0.35)';
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, plotH);
+                ctx.stroke();
+
+                ctx.fillStyle = '#94a3b8';
+                ctx.fillText(m.label, x, H - 7);
+            });
+
+            const numBars = 92;
+            const barWidth = Math.max(2, (W / numBars) * 0.76);
+            const barGrad = ctx.createLinearGradient(0, plotH, 0, 0);
+            barGrad.addColorStop(0, '#06b6d4');
+            barGrad.addColorStop(0.55, '#10b981');
+            barGrad.addColorStop(1, '#a855f7');
+            ctx.fillStyle = barGrad;
+
+            const isFilePlaying = audioElement && !audioElement.paused;
+            const hasRealAudioStream = Boolean(analyser && (isAudioActive || tabStream || isFilePlaying));
+
+            let useAnalyserFFT = false;
+            let freqData = null;
+
+            if (hasRealAudioStream) {
+                freqData = new Uint8Array(analyser.frequencyBinCount);
+                analyser.getByteFrequencyData(freqData);
+
+                let maxVal = 0;
+                let maxBin = 0;
+                for (let i = 2; i < freqData.length; i++) {
+                    if (freqData[i] > maxVal) {
+                        maxVal = freqData[i];
+                        maxBin = i;
+                    }
+                }
+                if (currentSourceMode === 'music' || tabStream || isFilePlaying || maxVal > 3) {
+                    useAnalyserFFT = true;
+                    if ((tabStream || isFilePlaying) && maxVal > 18 && audioCtx) {
+                        const detectedFreq = (maxBin * audioCtx.sampleRate) / analyser.fftSize;
+                        if (detectedFreq >= 45 && detectedFreq <= 4500) {
+                            document.getElementById('metric-freq').textContent = `${Math.round(detectedFreq)} Hz`;
+                            document.getElementById('metric-note').textContent = freqToNearestNote(detectedFreq);
+                        }
+                    }
+                }
+            }
+
+            if (useAnalyserFFT && freqData && audioCtx) {
+                const sampleRate = audioCtx.sampleRate;
+                const freqBinCount = analyser.frequencyBinCount;
+
+                for (let b = 0; b < numBars; b++) {
+                    const fStart = xToFreq((b / numBars) * W);
+                    const fEnd = xToFreq(((b + 1) / numBars) * W);
+                    const binStart = Math.max(1, Math.floor((fStart * analyser.fftSize) / sampleRate));
+                    const binEnd = Math.min(freqBinCount - 1, Math.ceil((fEnd * analyser.fftSize) / sampleRate));
+
+                    let val = 0;
+                    for (let k = binStart; k <= binEnd; k++) {
+                        if (freqData[k] > val) val = freqData[k];
+                    }
+
+                    const ratio = val / 255;
+                    const barH = ratio * (plotH - 8);
+                    const x = (b / numBars) * W;
+                    const y = plotH - barH;
+                    fillTopRoundedBar(ctx, x, y, barWidth, barH, 3);
+                }
+            } else if (currentSourceMode === 'synth') {
+                for (let b = 0; b < numBars; b++) {
+                    const fCenter = xToFreq(((b + 0.5) / numBars) * W);
+                    let baseEnergy = 0;
+
+                    if (currentWaveform === 'noise') {
+                        baseEnergy = 0.58 + (Math.sin(b * 1.7 + simPhase * 2) * 0.06);
+                    } else {
+                        const fundList = isChordMode ? [261.63, 329.63, 392.00] : [currentFreq];
+                        fundList.forEach(f0 => {
+                            const maxHarm = currentWaveform === 'sine' ? 1 : 9;
+                            for (let n = 1; n <= maxHarm; n++) {
+                                if ((currentWaveform === 'square' || currentWaveform === 'triangle') && n % 2 === 0) continue;
+                                const fn = f0 * n;
+                                const logDist = Math.abs(Math.log10(fCenter) - Math.log10(fn));
+                                if (logDist < 0.024) {
+                                    let harmAmp = 1 / n;
+                                    if (currentWaveform === 'triangle') harmAmp = 1 / (n * n);
+                                    const peakShape = Math.exp(-(logDist * logDist) / 0.00018);
+                                    baseEnergy = Math.max(baseEnergy, harmAmp * peakShape * 0.78);
+                                }
+                            }
+                        });
+                    }
+
+                    const eqDb = getEQGainAtFreq(fCenter);
+                    const eqFactor = Math.pow(10, eqDb / 28);
+                    const ratio = Math.min(0.95, Math.max(0.02, baseEnergy * eqFactor));
+
+                    if (ratio > 0.025) {
+                        const barH = ratio * (plotH - 10);
+                        const x = (b / numBars) * W;
+                        const y = plotH - barH;
+                        fillTopRoundedBar(ctx, x, y, barWidth, barH, 3);
+                    }
+                }
+            }
+
+            // 5-Band 그래픽 이퀄라이저 곡선 오버레이
+            const showOverlay = document.getElementById('chk-show-eq-overlay');
+            if (showOverlay && showOverlay.checked) {
+                const eqPoints = EQ_BANDS.map(band => {
+                    const x = freqToX(band.freq);
+                    const y = (plotH / 2) - (band.gain / 15) * (plotH * 0.42);
+                    return { x, y };
+                });
+
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(0, eqPoints[0].y);
+                ctx.lineTo(eqPoints[0].x, eqPoints[0].y);
+                for (let i = 0; i < eqPoints.length - 1; i++) {
+                    const xc = (eqPoints[i].x + eqPoints[i + 1].x) / 2;
+                    const yc = (eqPoints[i].y + eqPoints[i + 1].y) / 2;
+                    ctx.quadraticCurveTo(eqPoints[i].x, eqPoints[i].y, xc, yc);
+                }
+                ctx.lineTo(eqPoints[4].x, eqPoints[4].y);
+                ctx.lineTo(W, eqPoints[4].y);
+
+                ctx.strokeStyle = 'rgba(192, 132, 252, 0.92)';
+                ctx.lineWidth = 2.2;
+                ctx.setLineDash([5, 4]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                eqPoints.forEach(p => {
+                    ctx.fillStyle = '#c084fc';
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                ctx.restore();
+            }
+
+            // 마우스 호버 주파수 & 음계 툴팁
+            if (fftHoverX > 0 && fftHoverY > 0 && fftHoverY < plotH) {
+                const hoverFreq = xToFreq(fftHoverX);
+                const hoverNote = freqToNearestNote(hoverFreq);
+
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(fftHoverX, 0);
+                ctx.lineTo(fftHoverX, plotH);
+                ctx.stroke();
+
+                const label = `${Math.round(hoverFreq)} Hz (${hoverNote})`;
+                ctx.font = 'bold 11px Pretendard, sans-serif';
+                const tw = ctx.measureText(label).width + 16;
+                const tx = Math.min(W - tw - 6, Math.max(6, fftHoverX - tw / 2));
+                const ty = Math.max(10, fftHoverY - 32);
+
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+                ctx.strokeStyle = '#22d3ee';
+                ctx.fillRect(tx, ty, tw, 24);
+                ctx.strokeRect(tx, ty, tw, 24);
+
+                ctx.fillStyle = '#67e8f9';
+                ctx.textAlign = 'center';
+                ctx.fillText(label, tx + tw / 2, ty + 16);
+            }
+        }
+
+        function freqToNearestNote(freq) {
+            if (!freq || freq < 20) return '-';
+            const noteStrings = ['도(C)', '도#(C#)', '레(D)', '레#(D#)', '미(E)', '파(F)', '파#(F#)', '솔(G)', '솔#(G#)', '라(A)', '라#(A#)', '시(B)'];
+            const midi = Math.round(12 * Math.log2(freq / 440) + 69);
+            const noteIdx = ((midi % 12) + 12) % 12;
+            const octave = Math.floor(midi / 12) - 1;
+            return `${noteStrings[noteIdx]}${octave}`;
+        }
+
+        window.toggleFreezeWaveform = function() {
+            isFrozen = !isFrozen;
+            const btn = document.getElementById('btn-freeze');
+            const text = document.getElementById('freeze-btn-text');
+            if (isFrozen) {
+                btn.className = 'px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500 text-slate-950 transition flex items-center gap-1';
+                text.textContent = '파형 다시 움직이기';
+                updateCommentary('⏸️ 파형 화면을 일시정지했습니다! 사인파·네모파·톱니파의 생김새를 자세히 비교해 보세요.', '파형 고정');
+            } else {
+                btn.className = 'px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1';
+                text.textContent = '파형 멈춰서 관찰하기';
+            }
+        };
+
+        // 깨끗한 초기 상태의 단일 HTML 파일 다운로드
+        window.downloadStandaloneHTML = function() {
+            const blob = new Blob([INITIAL_CLEAN_DOM], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sound-lab-equalizer.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            updateCommentary('💾 [sound-lab-equalizer.html] 파일이 다운로드되었습니다! 크롬에서 더블클릭해 열면 유튜브 오디오 캡처가 100% 작동합니다.', '파일 저장 완료');
+        };
+
+        function updateCommentary(message, tag = '실시간 해설') {
+            const el = document.getElementById('live-commentary');
+            const tagEl = document.getElementById('commentary-tag');
+            if (el) el.innerHTML = message;
+            if (tagEl) tagEl.textContent = tag;
+        }
+
+        window.toggleFullscreen = function() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen().catch(() => {});
+            }
+        };
+
+        window.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            if (e.code === 'Space') {
+                e.preventDefault();
+                window.toggleSoundPower();
+                return;
+            }
+
+            const keyMap = {
+                KeyA: { f: 261.63, name: '도 (C4)', idx: 0 },
+                KeyS: { f: 293.66, name: '레 (D4)', idx: 1 },
+                KeyD: { f: 329.63, name: '미 (E4)', idx: 2 },
+                KeyF: { f: 349.23, name: '파 (F4)', idx: 3 },
+                KeyG: { f: 392.00, name: '솔 (G4)', idx: 4 },
+                KeyH: { f: 440.00, name: '라 (A4)', idx: 5 },
+                KeyJ: { f: 493.88, name: '시 (B4)', idx: 6 },
+                KeyK: { f: 523.25, name: '높은 도 (C5)', idx: 7 }
+            };
+
+            if (keyMap[e.code]) {
+                if (currentSourceMode !== 'synth') window.switchInputSource('synth');
+                const n = keyMap[e.code];
+                window.selectPianoNote(n.f, n.name, n.idx);
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            drawEQCurveCanvas();
+        });
+
+        window.onload = function () {
+            setupVerticalEQSliders();
+
+            const fftCanvas = document.getElementById('fft-canvas');
+            if (fftCanvas) {
+                fftCanvas.addEventListener('mousemove', (e) => {
+                    const r = fftCanvas.getBoundingClientRect();
+                    fftHoverX = e.clientX - r.left;
+                    fftHoverY = e.clientY - r.top;
+                });
+                fftCanvas.addEventListener('mouseleave', () => {
+                    fftHoverX = -1;
+                    fftHoverY = -1;
+                });
+            }
+
+            setTimeout(drawEQCurveCanvas, 60);
+            renderLoop();
+        };
+    </script></body></html>
